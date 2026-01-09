@@ -4,6 +4,7 @@ A real-time particle simulator where thousands of particles flow to form the sha
 
 ![Parti Demo](https://img.shields.io/badge/Particles-8K--15K-00f5ff?style=for-the-badge)
 ![MediaPipe](https://img.shields.io/badge/MediaPipe-Hands%20%2B%20FaceMesh-ff00ff?style=for-the-badge)
+![Docker](https://img.shields.io/badge/Docker-Ready-2496ED?style=for-the-badge)
 ![License](https://img.shields.io/badge/License-MIT-ffd700?style=for-the-badge)
 
 ## Features
@@ -45,8 +46,9 @@ A real-time particle simulator where thousands of particles flow to form the sha
 ### Prerequisites
 - Modern web browser (Chrome recommended for best MediaPipe performance)
 - Webcam
+- Docker (optional)
 
-### Running Locally
+### 🐳 Running with Docker (Recommended)
 
 1. Clone the repository:
    ```bash
@@ -54,15 +56,45 @@ A real-time particle simulator where thousands of particles flow to form the sha
    cd parti
    ```
 
-2. Start a local server:
+2. Start with Docker Compose:
    ```bash
-   python3 -m http.server 8080
+   docker compose up -d
    ```
 
 3. Open in browser:
    ```
    http://localhost:8080
    ```
+
+4. Stop the container:
+   ```bash
+   docker compose down
+   ```
+
+### 🔧 Development Mode
+
+For live reload during development:
+
+```bash
+docker compose --profile dev up parti-dev
+```
+
+Access at `http://localhost:8081` - changes to files in `app/` are reflected immediately.
+
+### 📦 Running Locally (without Docker)
+
+1. Clone and navigate:
+   ```bash
+   git clone https://github.com/rjchicago/parti.git
+   cd parti/app
+   ```
+
+2. Start a local server:
+   ```bash
+   python3 -m http.server 8080
+   ```
+
+3. Open `http://localhost:8080` in browser
 
 4. Click **Enable Camera** and allow camera access
 
@@ -95,14 +127,18 @@ All dependencies are loaded via CDN - no npm install required!
 ### Architecture
 ```
 parti/
-├── index.html      # Main HTML structure with intro screen and app layout
-├── styles.css      # Dark cyberpunk theme with glass-morphism UI
-├── app.js          # Core application logic
-│   ├── Particle system (physics, rendering, trails)
-│   ├── MediaPipe integration (hands + face)
-│   ├── Overlay drawing (skeleton, mesh)
-│   ├── Gesture detection (fist for theme cycling)
-│   └── UI controls and keyboard shortcuts
+├── app/
+│   ├── index.html      # Main HTML structure with intro screen and app layout
+│   ├── styles.css      # Dark cyberpunk theme with glass-morphism UI
+│   └── app.js          # Core application logic
+│       ├── Particle system (physics, rendering, trails)
+│       ├── MediaPipe integration (hands + face)
+│       ├── Overlay drawing (skeleton, mesh)
+│       ├── Gesture detection (fist for theme cycling)
+│       └── UI controls and keyboard shortcuts
+├── Dockerfile          # Production container build
+├── docker-compose.yml  # Container orchestration
+├── nginx.conf          # Web server configuration
 └── README.md
 ```
 
@@ -113,7 +149,7 @@ Particles are distributed using the golden ratio (φ ≈ 1.618) for organic, nat
 - Chrome/Edge recommended for best WebGL performance
 - Ensure good lighting for reliable hand/face detection
 - Close other camera-using applications
-- Lower particle count on slower machines (modify `CONFIG.particles.min/max` in app.js)
+- Lower particle count on slower machines (modify `CONFIG.particles.min/max` in `app/app.js`)
 
 ## Browser Support
 
@@ -123,6 +159,16 @@ Particles are distributed using the golden ratio (φ ≈ 1.618) for organic, nat
 | Edge | ✅ Full support |
 | Firefox | ⚠️ Works, may have lower FPS |
 | Safari | ⚠️ Limited MediaPipe support |
+
+## Docker Commands
+
+| Command | Description |
+|---------|-------------|
+| `docker compose up -d` | Start in background |
+| `docker compose down` | Stop and remove container |
+| `docker compose logs -f` | View logs |
+| `docker compose build --no-cache` | Rebuild image |
+| `docker compose --profile dev up parti-dev` | Development mode |
 
 ## License
 

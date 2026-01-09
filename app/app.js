@@ -11,6 +11,8 @@ const CONFIG = {
         max: 15000,
         baseSpeed: 2,
         attraction: 0.08,
+        repelDistance: 120,  // Max distance particles repel from landmarks
+        repelStrength: 0.15, // How strongly particles push away
         friction: 0.95,
         trailAlpha: 0.15,
         returnSpeed: 0.02
@@ -313,6 +315,10 @@ function createParticle() {
     const theme = THEMES[THEME_NAMES[state.currentTheme]];
     const color = theme.colors[Math.floor(Math.random() * theme.colors.length)];
     
+    // Random flow direction for organic movement
+    const flowAngle = Math.random() * Math.PI * 2;
+    const flowSpeed = 0.5 + Math.random() * 1.5;
+    
     return {
         x: Math.random() * state.canvasWidth,
         y: Math.random() * state.canvasHeight,
@@ -325,6 +331,11 @@ function createParticle() {
         alpha: Math.random() * 0.5 + 0.5,
         targetX: null,
         targetY: null,
+        // Flow properties for organic movement
+        flowAngle: flowAngle,
+        flowSpeed: flowSpeed,
+        phase: Math.random() * Math.PI * 2,  // Phase offset for wave motion
+        waveAmp: 0.3 + Math.random() * 0.5,  // Wave amplitude
         targetSpread: 5
     };
 }
@@ -434,27 +445,66 @@ function updateParticles() {
     }
     
     // Physics update
-    const attraction = CONFIG.particles.attraction * (state.mode === 'repel' ? -1 : 1);
-    
     for (const particle of state.particles) {
-        if (particle.targetX !== null) {
-            const dx = particle.targetX - particle.x;
-            const dy = particle.targetY - particle.y;
-            const dist = Math.sqrt(dx * dx + dy * dy);
-            
-            if (dist > 1) {
-                particle.vx += (dx / dist) * attraction * Math.min(dist * 0.1, 10);
-                particle.vy += (dy / dist) * attraction * Math.min(dist * 0.1, 10);
+        if (state.mode === 'attract') {
+            // Attract mode: pull particles toward their assigned landmark target
+            if (particle.targetX !== null) {
+                const dx = particle.targetX - particle.x;
+                const dy = particle.targetY - particle.y;
+                const dist = Math.sqrt(dx * dx + dy * dy);
+                
+                if (dist > 1) {
+                    particle.vx += (dx / dist) * CONFIG.particles.attraction * Math.min(dist * 0.1, 10);
+                    particle.vy += (dy / dist) * CONFIG.particles.attraction * Math.min(dist * 0.1, 10);
+                }
+            } else {
+                // No landmarks - return to base position
+                particle.vx += (particle.baseX - particle.x) * CONFIG.particles.returnSpeed;
+                particle.vy += (particle.baseY - particle.y) * CONFIG.particles.returnSpeed;
             }
         } else {
-            // Return to base position
-            particle.vx += (particle.baseX - particle.x) * CONFIG.particles.returnSpeed;
-            particle.vy += (particle.baseY - particle.y) * CONFIG.particles.returnSpeed;
+            // Repel mode: particles flow freely but avoid ALL landmarks
+            const time = performance.now() * 0.001;  // Time in seconds
+            
+            // Continuous flowing movement using sine waves for organic motion
+            const waveX = Math.sin(time * 0.5 + particle.phase) * particle.waveAmp;
+            const waveY = Math.cos(time * 0.7 + particle.phase * 1.3) * particle.waveAmp;
+            
+            // Apply flow direction with wave modulation
+            particle.vx += Math.cos(particle.flowAngle + waveX) * particle.flowSpeed * 0.1;
+            particle.vy += Math.sin(particle.flowAngle + waveY) * particle.flowSpeed * 0.1;
+            
+            // Slowly drift flow angle for variety
+            particle.flowAngle += (Math.sin(time * 0.2 + particle.phase) * 0.01);
+            
+            // Push away from ANY nearby landmark
+            const repelDist = CONFIG.particles.repelDistance;
+            for (const landmark of landmarks) {
+                const dx = particle.x - landmark.x;
+                const dy = particle.y - landmark.y;
+                const dist = Math.sqrt(dx * dx + dy * dy);
+                
+                if (dist < repelDist && dist > 1) {
+                    // Stronger push when closer, fades to zero at repelDistance
+                    const repelForce = CONFIG.particles.repelStrength * (1 - dist / repelDist);
+                    particle.vx += (dx / dist) * repelForce * 12;
+                    particle.vy += (dy / dist) * repelForce * 12;
+                }
+            }
         }
         
-        // Apply friction
-        particle.vx *= CONFIG.particles.friction;
-        particle.vy *= CONFIG.particles.friction;
+        // Apply friction (less friction in repel mode for continuous flow)
+        const friction = state.mode === 'repel' ? 0.98 : CONFIG.particles.friction;
+        particle.vx *= friction;
+        particle.vy *= friction;
+        
+        // Clamp velocity for stability
+        const maxSpeed = state.mode === 'repel' ? 4 : 8;
+        const speed = Math.sqrt(particle.vx * particle.vx + particle.vy * particle.vy);
+        if (speed > maxSpeed) {
+            particle.vx = (particle.vx / speed) * maxSpeed;
+            particle.vy = (particle.vy / speed) * maxSpeed;
+        }
         
         // Update position
         particle.x += particle.vx;

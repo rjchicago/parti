@@ -1,0 +1,28 @@
+services:
+  parti:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: parti
+    ports:
+      - "8080:80"
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost/health"]
+      interval: 30s
+      timeout: 3s
+      retries: 3
+      start_period: 5s
+
+  # Development mode with live reload
+  parti-dev:
+    image: nginx:alpine
+    container_name: parti-dev
+    ports:
+      - "8081:80"
+    volumes:
+      - ./app:/usr/share/nginx/html:ro
+      - ./nginx.conf:/etc/nginx/conf.d/default.conf:ro
+    profiles:
+      - dev
+    restart: unless-stopped
