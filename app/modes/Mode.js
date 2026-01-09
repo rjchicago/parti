@@ -69,4 +69,43 @@ export class Mode {
     getPresetTheme() {
         return null;
     }
+
+    /**
+     * Called before individual particle updates - for batch operations
+     * @param {Array} particles - All particles
+     * @param {Object} canvasSize - { width, height }
+     */
+    onBeforeUpdate(particles, canvasSize) {
+        // Override in subclasses for custom batch behavior
+    }
+
+    /**
+     * Called after particle rendering - for custom overlays
+     * @param {CanvasRenderingContext2D} ctx - Canvas context
+     * @param {Object} canvasSize - { width, height }
+     */
+    onAfterRender(ctx, canvasSize) {
+        // Override in subclasses for custom rendering
+    }
+
+    /**
+     * Get the alpha value for rendering a particle
+     * @param {Object} particle - The particle
+     * @returns {number} - Alpha value 0-1
+     */
+    getParticleAlpha(particle) {
+        return particle.alpha;
+    }
+
+    /**
+     * Initialize a particle's position and properties
+     * Called when particle is created or mode changes
+     * @param {Object} particle - The particle to initialize
+     * @param {Object} canvasSize - { width, height }
+     */
+    initParticle(particle, canvasSize) {
+        // Default: random position across canvas
+        particle.x = Math.random() * canvasSize.width;
+        particle.y = Math.random() * canvasSize.height;
+    }
 }

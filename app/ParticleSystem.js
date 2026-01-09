@@ -1,4 +1,4 @@
-import { AttractMode, RepelMode, RainMode, SnowMode } from './modes/index.js';
+import { AttractMode, RepelMode, RainMode, SnowMode, PartyMode, GalacticMode, MatrixMode } from './modes/index.js';
 
 // Golden ratio for organic distribution
 const PHI = 1.618033988749895;
@@ -54,7 +54,10 @@ export class ParticleSystem {
             attract: new AttractMode(),
             repel: new RepelMode(),
             rain: new RainMode(),
-            snow: new SnowMode()
+            snow: new SnowMode(),
+            party: new PartyMode(),
+            galactic: new GalacticMode(),
+            matrix: new MatrixMode()
         };
         this.currentMode = this.modes.attract;
     }
@@ -85,9 +88,11 @@ export class ParticleSystem {
         const flowAngle = Math.random() * Math.PI * 2;
         const flowSpeed = 0.5 + Math.random() * 1.5;
         
-        return {
-            x: Math.random() * this.canvas.width,
-            y: Math.random() * this.canvas.height,
+        const canvasSize = { width: this.canvas.width, height: this.canvas.height };
+        
+        const particle = {
+            x: 0,
+            y: 0,
             vx: (Math.random() - 0.5) * 2,
             vy: (Math.random() - 0.5) * 2,
             baseX: Math.random() * this.canvas.width,
@@ -104,6 +109,11 @@ export class ParticleSystem {
             phase: Math.random() * Math.PI * 2,
             waveAmp: 0.3 + Math.random() * 0.5
         };
+        
+        // Let mode initialize particle position
+        this.currentMode.initParticle(particle, canvasSize);
+        
+        return particle;
     }
 
     /**
@@ -112,6 +122,14 @@ export class ParticleSystem {
     setMode(modeName) {
         if (this.modes[modeName]) {
             this.currentMode = this.modes[modeName];
+            
+            // Reinitialize particle positions for new mode
+            const canvasSize = { width: this.canvas.width, height: this.canvas.height };
+            for (const particle of this.particles) {
+                this.currentMode.initParticle(particle, canvasSize);
+                particle.vx = (Math.random() - 0.5) * 2;
+                particle.vy = (Math.random() - 0.5) * 2;
+            }
         }
     }
 
@@ -195,6 +213,9 @@ export class ParticleSystem {
         const maxSpeed = mode.getMaxSpeed();
         const usesFriction = mode.usesFriction();
         
+        // Call mode's before-update hook (for batch operations like bursts, shooting stars)
+        mode.onBeforeUpdate(this.particles, canvasSize);
+        
         for (const particle of this.particles) {
             // Apply mode-specific physics
             mode.updateParticle(particle, this.landmarks, canvasSize);
@@ -226,9 +247,10 @@ export class ParticleSystem {
      */
     render() {
         const ctx = this.ctx;
+        const mode = this.currentMode;
         
         // Clear with trail effect (mode-specific alpha)
-        const trailAlpha = this.currentMode.getTrailAlpha();
+        const trailAlpha = mode.getTrailAlpha();
         ctx.fillStyle = `rgba(5, 5, 8, ${1 - trailAlpha})`;
         ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
         
@@ -237,9 +259,13 @@ export class ParticleSystem {
             ctx.beginPath();
             ctx.arc(particle.x, particle.y, particle.size, 0, Math.PI * 2);
             ctx.fillStyle = particle.color;
-            ctx.globalAlpha = particle.alpha;
+            ctx.globalAlpha = mode.getParticleAlpha(particle);
             ctx.fill();
         }
+        
+        // Call mode's after-render hook (for overlays like shooting stars)
+        const canvasSize = { width: this.canvas.width, height: this.canvas.height };
+        mode.onAfterRender(ctx, canvasSize);
         
         ctx.globalAlpha = 1;
     }

@@ -325,6 +325,35 @@ html, body {
     box-shadow: 0 0 20px rgba(255, 255, 255, 0.5), 0 0 40px rgba(255, 255, 255, 0.3);
 }
 
+.mode-btn.active[data-mode="party"] {
+    background: linear-gradient(135deg, #ff0080, #ff8c00, #ffff00, #00ff00, #00bfff, #8b00ff);
+    background-size: 400% 400%;
+    animation: partyGradient 2s ease infinite;
+    border-color: #ff0080;
+    color: #1a1a2e;
+    box-shadow: 0 0 20px rgba(255, 0, 128, 0.5), 0 0 40px rgba(255, 140, 0, 0.3);
+}
+
+@keyframes partyGradient {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+}
+
+.mode-btn.active[data-mode="galactic"] {
+    background: linear-gradient(135deg, #1a0033, #4d0099, #9933ff);
+    border-color: #9933ff;
+    box-shadow: 0 0 20px rgba(153, 51, 255, 0.5), 0 0 40px rgba(77, 0, 153, 0.3);
+}
+
+.mode-btn.active[data-mode="matrix"] {
+    background: #003300;
+    border-color: #00ff00;
+    color: #00ff00;
+    box-shadow: 0 0 20px rgba(0, 255, 0, 0.5), 0 0 40px rgba(0, 255, 0, 0.3);
+    text-shadow: 0 0 10px rgba(0, 255, 0, 0.8);
+}
+
 .mode-icon {
     font-size: 1.2rem;
 }

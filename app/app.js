@@ -107,7 +107,7 @@ let state = {
 let introScreen, app, particleCanvas;
 let cameraFeed, overlayCanvas, overlayCtx;
 let statusIndicator, statusDot, statusText;
-let attractBtn, repelBtn, rainBtn, snowBtn, themeSelect;
+let attractBtn, repelBtn, rainBtn, snowBtn, partyBtn, galacticBtn, matrixBtn, themeSelect;
 let particleCountEl, cameraPreviewContainer, fistActionSelect;
 
 // Core systems
@@ -132,6 +132,9 @@ function init() {
     repelBtn = document.getElementById('repel-btn');
     rainBtn = document.getElementById('rain-btn');
     snowBtn = document.getElementById('snow-btn');
+    partyBtn = document.getElementById('party-btn');
+    galacticBtn = document.getElementById('galactic-btn');
+    matrixBtn = document.getElementById('matrix-btn');
     themeSelect = document.getElementById('theme-select');
     particleCountEl = document.getElementById('active-particles');
     cameraPreviewContainer = document.getElementById('camera-preview-container');
@@ -143,6 +146,9 @@ function init() {
     repelBtn.addEventListener('click', () => setMode('repel'));
     rainBtn.addEventListener('click', () => setMode('rain'));
     snowBtn.addEventListener('click', () => setMode('snow'));
+    partyBtn.addEventListener('click', () => setMode('party'));
+    galacticBtn.addEventListener('click', () => setMode('galactic'));
+    matrixBtn.addEventListener('click', () => setMode('matrix'));
     themeSelect.addEventListener('change', (e) => setTheme(parseInt(e.target.value)));
     fistActionSelect.addEventListener('change', (e) => { 
         state.fistAction = e.target.value;
@@ -356,6 +362,9 @@ function processLandmarks() {
     const canvasHeight = particleCanvas.height;
 
     // Process hand landmarks
+    // Edge landmarks: fingertips (4,8,12,16,20) and wrist (0)
+    const HAND_EDGE_INDICES = [0, 4, 8, 12, 16, 20];
+    
     if (state.handResults?.multiHandLandmarks) {
         for (const handLandmarks of state.handResults.multiHandLandmarks) {
             for (let i = 0; i < handLandmarks.length; i++) {
@@ -374,13 +383,22 @@ function processLandmarks() {
                     x: (1 - lm.x) * canvasWidth,
                     y: lm.y * canvasHeight,
                     spread: spread,
-                    weight: CONFIG.hand.landmarkWeight
+                    weight: CONFIG.hand.landmarkWeight,
+                    type: 'hand',
+                    isEdge: HAND_EDGE_INDICES.includes(i)
                 });
             }
         }
     }
 
     // Process face landmarks
+    // Face oval indices define the outline
+    const FACE_OVAL_INDICES = FACE_LANDMARKS.faceOval;
+    
+    // Eye center landmarks (approximate centers)
+    const LEFT_EYE_CENTER = 159;  // Center of left eye
+    const RIGHT_EYE_CENTER = 386; // Center of right eye
+    
     if (state.faceResults?.multiFaceLandmarks) {
         for (const faceLandmarks of state.faceResults.multiFaceLandmarks) {
             for (let i = 0; i < faceLandmarks.length; i++) {
@@ -395,13 +413,23 @@ function processLandmarks() {
                 } else if (DEPTH_LANDMARKS.eyeSockets.includes(i)) {
                     depthBoost = CONFIG.face.eyeSocketBoost;
                 }
+                
+                // Determine feature type
+                let feature = null;
+                if (i === LEFT_EYE_CENTER) feature = 'leftEye';
+                else if (i === RIGHT_EYE_CENTER) feature = 'rightEye';
+                else if (FACE_LANDMARKS.lips.includes(i)) feature = 'lips';
 
                 landmarks.push({
                     x: (1 - lm.x) * canvasWidth,
                     y: lm.y * canvasHeight,
                     z: (lm.z || 0) * depthBoost,
                     spread: spread,
-                    weight: CONFIG.face.landmarkWeight * depthBoost
+                    weight: CONFIG.face.landmarkWeight * depthBoost,
+                    type: 'face',
+                    isEdge: FACE_OVAL_INDICES.includes(i),
+                    feature: feature,
+                    index: i
                 });
             }
         }
@@ -572,12 +600,15 @@ function setMode(mode) {
     repelBtn.classList.toggle('active', mode === 'repel');
     rainBtn.classList.toggle('active', mode === 'rain');
     snowBtn.classList.toggle('active', mode === 'snow');
+    partyBtn.classList.toggle('active', mode === 'party');
+    galacticBtn.classList.toggle('active', mode === 'galactic');
+    matrixBtn.classList.toggle('active', mode === 'matrix');
     
     saveSettings();
 }
 
 function cycleMode() {
-    const modes = ['attract', 'repel', 'rain', 'snow'];
+    const modes = ['attract', 'repel', 'rain', 'snow', 'party', 'galactic', 'matrix'];
     const currentIndex = modes.indexOf(state.mode);
     const nextMode = modes[(currentIndex + 1) % modes.length];
     setMode(nextMode);

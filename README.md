@@ -33,6 +33,11 @@ A real-time particle simulator where thousands of particles flow to form the sha
 | **Repel** | 💨 | Particles flow freely but avoid landmarks |
 | **Rain** | 🌧️ | Particles fall from top, slow and drip on landmarks |
 | **Snow** | ❄️ | Particles fall gently, stop and build up on landmarks |
+| **Party** | 🎉 | Confetti bursts with silhouette effect and glowing happy face mask |
+| **Galactic** | 🌌 | Milky Way starfield with parallax head tracking and shooting stars |
+| **Matrix** | 💊 | Japanese katakana digital rain with cycling characters |
+
+Each mode has a **preset theme** that auto-applies when selected.
 
 ### 🎨 Color Themes
 
@@ -87,9 +92,10 @@ Open http://localhost:8080 and click **Enable Camera**.
 
 | Key | Action |
 |-----|--------|
-| `SPACE` | Cycle through modes (Attract → Repel → Rain → Snow) |
+| `SPACE` | Cycle through modes |
 | `V` | Toggle camera preview visibility |
 | `T` | Cycle through color themes |
+| `P` | Pause/unpause particle simulation |
 | `↑` | Increase particle count (hold for acceleration) |
 | `↓` | Decrease particle count (hold for acceleration) |
 
@@ -129,11 +135,14 @@ parti/
 │   ├── ParticleSystem.js   # Particle management & rendering
 │   └── modes/
 │       ├── index.js        # Barrel export
-│       ├── Mode.js         # Base class
+│       ├── Mode.js         # Base class with lifecycle hooks
 │       ├── AttractMode.js  # Attract to landmarks
 │       ├── RepelMode.js    # Flow around landmarks
 │       ├── RainMode.js     # Fall + drip
-│       └── SnowMode.js     # Fall + build up
+│       ├── SnowMode.js     # Fall + build up
+│       ├── PartyMode.js    # Confetti + silhouette mask
+│       ├── GalacticMode.js # Milky Way + shooting stars
+│       └── MatrixMode.js   # Digital rain
 ├── Dockerfile
 ├── docker-compose.yml
 ├── nginx.conf
@@ -156,9 +165,16 @@ export class MyMode extends Mode {
         // Your physics here
     }
 
+    // Optional lifecycle hooks
+    onBeforeUpdate(particles, canvasSize) { }  // Batch operations
+    onAfterRender(ctx, canvasSize) { }         // Custom overlays
+    initParticle(particle, canvasSize) { }     // Custom positioning
+    getParticleAlpha(particle) { return particle.alpha; }
+
     getMaxSpeed() { return 8; }
     getFriction() { return 0.95; }
     getTrailAlpha() { return 0.15; }
+    getPresetTheme() { return null; } // Theme index or null
 }
 ```
 
@@ -215,4 +231,8 @@ Built with ❤️ using [MediaPipe](https://mediapipe.dev/) by Google
 
 ---
 
-**Tip**: Try **Snow** mode with the **White** theme for a winter wonderland effect! ❄️⬜
+**Tips**: 
+- Try **Snow** mode with the **White** theme for a winter wonderland! ❄️⬜
+- **Party** mode creates a glowing happy face mask on your silhouette! 🎉😊
+- **Matrix** mode for that authentic digital rain experience! 💊🟢
+- **Galactic** mode - move your head to shift the cosmos! 🌌✨
