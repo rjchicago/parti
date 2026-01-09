@@ -2,7 +2,7 @@
 
 A real-time particle simulator where thousands of particles flow to form the shape of your face and hands on camera using MediaPipe for tracking.
 
-![Parti Demo](https://img.shields.io/badge/Particles-8K--15K-00f5ff?style=for-the-badge)
+![Particles](https://img.shields.io/badge/Particles-1--10K-00f5ff?style=for-the-badge)
 ![MediaPipe](https://img.shields.io/badge/MediaPipe-Hands%20%2B%20FaceMesh-ff00ff?style=for-the-badge)
 ![Docker](https://img.shields.io/badge/Docker-Ready-2496ED?style=for-the-badge)
 ![License](https://img.shields.io/badge/License-MIT-ffd700?style=for-the-badge)
@@ -23,133 +23,170 @@ A real-time particle simulator where thousands of particles flow to form the sha
   - **Teal** for eyes
   - **Pink** for lips
   - **Cyan** for face oval
-- Tight particle clustering (1-2 pixels) for dense mesh effect
+- Tight particle clustering for dense mesh effect
 
-### ✨ Particle System
-- **8,000 to 15,000 particles** with physics-based movement
-- Particles attract toward hand and face landmarks
-- Even distribution between visible elements
-- **Particle trails** with semi-transparent fade
-- **Attract mode**: Particles flow toward you
-- **Repel mode**: Particles push away
+### 🎮 Particle Modes
+
+| Mode | Icon | Behavior |
+|------|------|----------|
+| **Attract** | 🧲 | Particles flow toward hand and face landmarks |
+| **Repel** | 💨 | Particles flow freely but avoid landmarks |
+| **Rain** | 🌧️ | Particles fall from top, slow and drip on landmarks |
+| **Snow** | ❄️ | Particles fall gently, stop and build up on landmarks |
 
 ### 🎨 Color Themes
-5 stunning color themes that cycle with a fist gesture:
-- 🌈 **Rainbow** - Full spectrum colors
-- 🔥 **Fire** - Red, orange, yellow flames
-- 🌊 **Ocean** - Deep blues and teals
-- 🌌 **Galaxy** - Purple and pink nebula
-- 💚 **Matrix** - Green digital rain
+
+6 stunning color themes:
+
+| Theme | Colors |
+|-------|--------|
+| 🌈 **Rainbow** | Full spectrum (red, orange, yellow, green, blue, purple) |
+| 🔥 **Fire** | Red, orange, yellow flames |
+| 🌊 **Ocean** | Deep blues and teals |
+| 🌌 **Galaxy** | Purple and pink nebula |
+| 💚 **Matrix** | Green digital rain |
+| ⬜ **White** | Pure white and light grays |
+
+### ✨ Particle System
+- **1 to 10,000 particles** with physics-based movement
+- **Arrow keys** to adjust particle count in real-time
+- **Particle trails** with mode-specific fade effects
+- **Golden ratio distribution** for organic flow patterns
+- **Settings persistence** via localStorage
 
 ## Getting Started
 
 ### Prerequisites
-- Modern web browser (Chrome recommended for best MediaPipe performance)
+- Modern web browser (Chrome recommended)
 - Webcam
 - Docker (optional)
 
 ### 🐳 Running with Docker (Recommended)
 
-1. Clone the repository:
-   ```bash
-   git clone https://github.com/rjchicago/parti.git
-   cd parti
-   ```
-
-2. Start with Docker Compose:
-   ```bash
-   docker compose up -d
-   ```
-
-3. Open in browser:
-   ```
-   http://localhost:8080
-   ```
-
-4. Stop the container:
-   ```bash
-   docker compose down
-   ```
-
-### 🔧 Development Mode
-
-For live reload during development:
-
 ```bash
-docker compose --profile dev up parti-dev
+git clone https://github.com/rjchicago/parti.git
+cd parti
+docker compose up -d
 ```
 
-Access at `http://localhost:8081` - changes to files in `app/` are reflected immediately.
+Open http://localhost:8080 in your browser.
 
-### 📦 Running Locally (without Docker)
+### 📦 Running Locally
 
-1. Clone and navigate:
-   ```bash
-   git clone https://github.com/rjchicago/parti.git
-   cd parti/app
-   ```
+```bash
+git clone https://github.com/rjchicago/parti.git
+cd parti/app
+python3 -m http.server 8080
+```
 
-2. Start a local server:
-   ```bash
-   python3 -m http.server 8080
-   ```
-
-3. Open `http://localhost:8080` in browser
-
-4. Click **Enable Camera** and allow camera access
+Open http://localhost:8080 and click **Enable Camera**.
 
 ## Controls
 
-| Input | Action |
-|-------|--------|
-| `SPACE` | Toggle Attract/Repel mode |
+### Keyboard Shortcuts
+
+| Key | Action |
+|-----|--------|
+| `SPACE` | Cycle through modes (Attract → Repel → Rain → Snow) |
 | `V` | Toggle camera preview visibility |
 | `T` | Cycle through color themes |
-| ✊ **Fist gesture** | Cycle through color themes |
+| `↑` | Increase particle count (hold for acceleration) |
+| `↓` | Decrease particle count (hold for acceleration) |
+
+### Arrow Key Acceleration
+
+| Hold Duration | Rate |
+|---------------|------|
+| 0-2 seconds | 1 particle/frame |
+| 2-5 seconds | 10 particles/frame |
+| 5+ seconds | 100 particles/frame |
+
+### Gesture Controls
+
+Configure via the **✊ Fist** dropdown:
+- Toggle Mode
+- Toggle Camera
+- Cycle Theme
+- None (disabled)
 
 ## UI Layout
 
-- **Top Left**: Mode toggle buttons (Attract/Repel) and current theme indicator
+- **Top Left**: Mode buttons, Theme dropdown, Fist action dropdown
 - **Top Center**: 256×144 camera preview with skeleton/mesh overlays
-- **Top Right**: Status indicator (loading, detection status, prompts)
+- **Top Right**: Status indicator
 - **Bottom Left**: Active particle count
 - **Bottom Right**: Keyboard shortcuts panel
+- **Bottom Center**: Reset Settings link
+
+## Architecture
+
+```
+parti/
+├── app/
+│   ├── index.html          # Main HTML structure
+│   ├── styles.css          # Dark cyberpunk theme
+│   ├── app.js              # Main app, UI, MediaPipe
+│   ├── ParticleSystem.js   # Particle management & rendering
+│   └── modes/
+│       ├── index.js        # Barrel export
+│       ├── Mode.js         # Base class
+│       ├── AttractMode.js  # Attract to landmarks
+│       ├── RepelMode.js    # Flow around landmarks
+│       ├── RainMode.js     # Fall + drip
+│       └── SnowMode.js     # Fall + build up
+├── Dockerfile
+├── docker-compose.yml
+├── nginx.conf
+└── README.md
+```
+
+### Adding New Modes
+
+Create a new mode by extending the base class:
+
+```javascript
+import { Mode } from './Mode.js';
+
+export class MyMode extends Mode {
+    constructor() {
+        super('mymode', '🎯');
+    }
+
+    updateParticle(particle, landmarks, canvasSize) {
+        // Your physics here
+    }
+
+    getMaxSpeed() { return 8; }
+    getFriction() { return 0.95; }
+    getTrailAlpha() { return 0.15; }
+}
+```
 
 ## Technical Details
 
 ### Dependencies
-- [MediaPipe Hands](https://google.github.io/mediapipe/solutions/hands.html) - Hand landmark detection
-- [MediaPipe FaceMesh](https://google.github.io/mediapipe/solutions/face_mesh.html) - Face landmark detection
+- [MediaPipe Hands](https://google.github.io/mediapipe/solutions/hands.html) - 21 landmarks per hand
+- [MediaPipe FaceMesh](https://google.github.io/mediapipe/solutions/face_mesh.html) - 468 face landmarks
 - [MediaPipe Camera Utils](https://google.github.io/mediapipe/solutions/camera_utils.html) - Camera handling
 
-All dependencies are loaded via CDN - no npm install required!
+All dependencies loaded via CDN - no npm install required!
 
-### Architecture
-```
-parti/
-├── app/
-│   ├── index.html      # Main HTML structure with intro screen and app layout
-│   ├── styles.css      # Dark cyberpunk theme with glass-morphism UI
-│   └── app.js          # Core application logic
-│       ├── Particle system (physics, rendering, trails)
-│       ├── MediaPipe integration (hands + face)
-│       ├── Overlay drawing (skeleton, mesh)
-│       ├── Gesture detection (fist for theme cycling)
-│       └── UI controls and keyboard shortcuts
-├── Dockerfile          # Production container build
-├── docker-compose.yml  # Container orchestration
-├── nginx.conf          # Web server configuration
-└── README.md
-```
+### Settings Persistence
 
-### Golden Ratio Distribution
-Particles are distributed using the golden ratio (φ ≈ 1.618) for organic, natural-looking flow patterns. This creates visually pleasing spirals and prevents clustering artifacts.
+User settings are saved to localStorage:
+- Current mode
+- Color theme
+- Particle count
+- Fist action
+- Camera visibility
+
+Click **Reset Settings** (bottom center) to restore defaults.
 
 ### Performance Tips
-- Chrome/Edge recommended for best WebGL performance
-- Ensure good lighting for reliable hand/face detection
+- Chrome/Edge recommended for best performance
+- Good lighting improves hand/face detection
+- Lower particle count on slower machines (use ↓ key)
 - Close other camera-using applications
-- Lower particle count on slower machines (modify `CONFIG.particles.min/max` in `app/app.js`)
 
 ## Browser Support
 
@@ -165,10 +202,8 @@ Particles are distributed using the golden ratio (φ ≈ 1.618) for organic, nat
 | Command | Description |
 |---------|-------------|
 | `docker compose up -d` | Start in background |
-| `docker compose down` | Stop and remove container |
+| `docker compose down` | Stop container |
 | `docker compose logs -f` | View logs |
-| `docker compose build --no-cache` | Rebuild image |
-| `docker compose --profile dev up parti-dev` | Development mode |
 
 ## License
 
@@ -180,4 +215,4 @@ Built with ❤️ using [MediaPipe](https://mediapipe.dev/) by Google
 
 ---
 
-**Tip**: For the best experience, use in a well-lit room and position yourself so your face and hands are clearly visible to the camera. Make a fist to cycle through the beautiful color themes! ✊🎨
+**Tip**: Try **Snow** mode with the **White** theme for a winter wonderland effect! ❄️⬜
