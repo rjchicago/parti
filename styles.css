@@ -1,0 +1,478 @@
+/* ===== CSS Variables & Theme ===== */
+:root {
+    --bg-dark: #0a0a0f;
+    --bg-darker: #050508;
+    --accent-cyan: #00f5ff;
+    --accent-pink: #ff00ff;
+    --accent-gold: #ffd700;
+    --accent-teal: #00e5cc;
+    --text-primary: #ffffff;
+    --text-secondary: rgba(255, 255, 255, 0.6);
+    --glass-bg: rgba(10, 10, 20, 0.85);
+    --glass-border: rgba(255, 255, 255, 0.1);
+    --glow-cyan: 0 0 20px rgba(0, 245, 255, 0.5), 0 0 40px rgba(0, 245, 255, 0.3);
+    --glow-pink: 0 0 20px rgba(255, 0, 255, 0.5), 0 0 40px rgba(255, 0, 255, 0.3);
+}
+
+/* ===== Reset & Base ===== */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+html, body {
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    font-family: 'Rajdhani', sans-serif;
+    background: var(--bg-dark);
+    color: var(--text-primary);
+}
+
+.hidden {
+    display: none !important;
+}
+
+/* ===== Intro Screen ===== */
+#intro-screen {
+    position: fixed;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--bg-dark);
+    z-index: 1000;
+    overflow: hidden;
+}
+
+.intro-content {
+    position: relative;
+    z-index: 10;
+    text-align: center;
+    padding: 3rem;
+}
+
+.logo-container {
+    position: relative;
+    margin-bottom: 2rem;
+}
+
+.logo-text {
+    font-family: 'Orbitron', sans-serif;
+    font-size: clamp(4rem, 15vw, 8rem);
+    font-weight: 900;
+    letter-spacing: 0.3em;
+    background: linear-gradient(135deg, var(--accent-cyan), var(--accent-pink), var(--accent-gold));
+    background-size: 200% 200%;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    animation: gradientShift 4s ease infinite;
+    text-shadow: none;
+    filter: drop-shadow(0 0 30px rgba(0, 245, 255, 0.4));
+}
+
+@keyframes gradientShift {
+    0%, 100% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+}
+
+.tagline {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 1.2rem;
+    letter-spacing: 0.5em;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    margin-top: 0.5rem;
+}
+
+.description {
+    font-size: 1.3rem;
+    color: var(--text-secondary);
+    max-width: 500px;
+    margin: 0 auto 3rem;
+    line-height: 1.6;
+}
+
+.glow-button {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 1.2rem 3rem;
+    font-family: 'Orbitron', sans-serif;
+    font-size: 1.2rem;
+    font-weight: 700;
+    color: var(--bg-dark);
+    background: linear-gradient(135deg, var(--accent-cyan), var(--accent-teal));
+    border: none;
+    border-radius: 60px;
+    cursor: pointer;
+    overflow: hidden;
+    transition: all 0.3s ease;
+    box-shadow: var(--glow-cyan);
+}
+
+.glow-button::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(135deg, var(--accent-pink), var(--accent-gold));
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.glow-button:hover {
+    transform: scale(1.05);
+    box-shadow: 0 0 40px rgba(0, 245, 255, 0.6), 0 0 80px rgba(0, 245, 255, 0.4);
+}
+
+.glow-button:hover::before {
+    opacity: 1;
+}
+
+.glow-button .btn-icon,
+.glow-button .btn-text {
+    position: relative;
+    z-index: 1;
+}
+
+.btn-icon {
+    font-size: 1.5rem;
+}
+
+.permission-note {
+    margin-top: 1.5rem;
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+    opacity: 0.6;
+}
+
+/* Intro Background Particles */
+.intro-bg-particles {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+}
+
+/* ===== Main App ===== */
+#app {
+    position: fixed;
+    inset: 0;
+    background: var(--bg-darker);
+}
+
+#particle-canvas {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+}
+
+/* ===== Camera Preview ===== */
+#camera-preview-container {
+    position: fixed;
+    top: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 256px;
+    height: 144px;
+    border-radius: 12px;
+    overflow: hidden;
+    border: 2px solid var(--glass-border);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5), 0 0 20px rgba(0, 245, 255, 0.2);
+    z-index: 100;
+    background: var(--bg-dark);
+}
+
+#camera-feed {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transform: scaleX(-1);
+}
+
+#overlay-canvas {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+}
+
+.preview-label {
+    position: absolute;
+    top: 8px;
+    left: 8px;
+    padding: 3px 8px;
+    font-size: 0.7rem;
+    font-weight: 700;
+    background: #ff0040;
+    color: white;
+    border-radius: 4px;
+    animation: livePulse 1.5s ease-in-out infinite;
+}
+
+@keyframes livePulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.6; }
+}
+
+/* ===== Status Indicator ===== */
+#status-indicator {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 12px 20px;
+    background: var(--glass-bg);
+    border: 1px solid var(--glass-border);
+    border-radius: 30px;
+    backdrop-filter: blur(10px);
+    z-index: 100;
+}
+
+.status-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: var(--accent-gold);
+    animation: statusPulse 1s ease-in-out infinite;
+}
+
+.status-dot.active {
+    background: var(--accent-cyan);
+}
+
+.status-dot.detecting {
+    background: #00ff88;
+}
+
+.status-dot.warning {
+    background: #ff8800;
+}
+
+@keyframes statusPulse {
+    0%, 100% { transform: scale(1); opacity: 1; }
+    50% { transform: scale(1.2); opacity: 0.7; }
+}
+
+.status-text {
+    font-size: 0.9rem;
+    font-weight: 500;
+    letter-spacing: 0.05em;
+}
+
+/* ===== Mode Controls ===== */
+#mode-controls {
+    position: fixed;
+    top: 20px;
+    left: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    z-index: 100;
+}
+
+.mode-btn {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 12px 20px;
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--text-secondary);
+    background: var(--glass-bg);
+    border: 1px solid var(--glass-border);
+    border-radius: 12px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    backdrop-filter: blur(10px);
+}
+
+.mode-btn:hover {
+    background: rgba(255, 255, 255, 0.1);
+    border-color: rgba(255, 255, 255, 0.2);
+}
+
+.mode-btn.active {
+    color: var(--bg-dark);
+    background: var(--accent-cyan);
+    border-color: var(--accent-cyan);
+    box-shadow: var(--glow-cyan);
+}
+
+.mode-btn.active[data-mode="repel"] {
+    background: var(--accent-pink);
+    border-color: var(--accent-pink);
+    box-shadow: var(--glow-pink);
+}
+
+.mode-icon {
+    font-size: 1.2rem;
+}
+
+.theme-indicator {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 20px;
+    background: var(--glass-bg);
+    border: 1px solid var(--glass-border);
+    border-radius: 12px;
+    backdrop-filter: blur(10px);
+    margin-top: 10px;
+}
+
+.theme-label {
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+}
+
+.theme-name {
+    font-weight: 700;
+    background: linear-gradient(90deg, var(--accent-cyan), var(--accent-pink));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+/* ===== Shortcuts Panel ===== */
+#shortcuts-panel {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    padding: 16px;
+    background: var(--glass-bg);
+    border: 1px solid var(--glass-border);
+    border-radius: 12px;
+    backdrop-filter: blur(10px);
+    z-index: 100;
+}
+
+.shortcut-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+}
+
+kbd {
+    display: inline-block;
+    padding: 4px 10px;
+    font-family: 'Orbitron', sans-serif;
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: var(--accent-cyan);
+    background: rgba(0, 245, 255, 0.1);
+    border: 1px solid rgba(0, 245, 255, 0.3);
+    border-radius: 6px;
+    min-width: 50px;
+    text-align: center;
+}
+
+.gesture-hint {
+    display: inline-block;
+    padding: 4px 10px;
+    font-size: 0.75rem;
+    background: rgba(255, 0, 255, 0.1);
+    border: 1px solid rgba(255, 0, 255, 0.3);
+    border-radius: 6px;
+    min-width: 50px;
+    text-align: center;
+}
+
+/* ===== Particle Count ===== */
+#particle-count {
+    position: fixed;
+    bottom: 20px;
+    left: 20px;
+    padding: 10px 16px;
+    font-family: 'Orbitron', sans-serif;
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+    background: var(--glass-bg);
+    border: 1px solid var(--glass-border);
+    border-radius: 8px;
+    backdrop-filter: blur(10px);
+    z-index: 100;
+}
+
+#active-particles {
+    color: var(--accent-cyan);
+    font-weight: 700;
+}
+
+/* ===== Responsive ===== */
+@media (max-width: 768px) {
+    .logo-text {
+        font-size: 3rem;
+        letter-spacing: 0.2em;
+    }
+
+    .description {
+        font-size: 1rem;
+        padding: 0 1rem;
+    }
+
+    .glow-button {
+        padding: 1rem 2rem;
+        font-size: 1rem;
+    }
+
+    #camera-preview-container {
+        width: 180px;
+        height: 101px;
+    }
+
+    #shortcuts-panel {
+        display: none;
+    }
+
+    .mode-label {
+        display: none;
+    }
+
+    .mode-btn {
+        padding: 12px 16px;
+    }
+}
+
+/* ===== Loading Animation ===== */
+.loading-overlay {
+    position: fixed;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    background: rgba(5, 5, 8, 0.95);
+    z-index: 500;
+}
+
+.loading-spinner {
+    width: 60px;
+    height: 60px;
+    border: 3px solid var(--glass-border);
+    border-top-color: var(--accent-cyan);
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+.loading-text {
+    margin-top: 1.5rem;
+    font-size: 1rem;
+    color: var(--text-secondary);
+}

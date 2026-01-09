@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Parti - Particle Face & Hand Tracker</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <!-- Intro Screen -->
+    <div id="intro-screen">
+        <div class="intro-content">
+            <div class="logo-container">
+                <div class="logo-particles"></div>
+                <h1 class="logo-text">PARTI</h1>
+                <p class="tagline">Particle Flow Tracker</p>
+            </div>
+            <p class="description">
+                Experience thousands of particles flowing to form the shape of your face and hands in real-time.
+            </p>
+            <button id="enable-camera-btn" class="glow-button">
+                <span class="btn-icon">📷</span>
+                <span class="btn-text">Enable Camera</span>
+            </button>
+            <p class="permission-note">Camera access required for tracking</p>
+        </div>
+        <div class="intro-bg-particles" id="intro-particles"></div>
+    </div>
+
+    <!-- Main App -->
+    <div id="app" class="hidden">
+        <!-- Particle Canvas (fullscreen) -->
+        <canvas id="particle-canvas"></canvas>
+
+        <!-- Camera Preview Overlay -->
+        <div id="camera-preview-container">
+            <video id="camera-feed" autoplay playsinline muted></video>
+            <canvas id="overlay-canvas"></canvas>
+            <div class="preview-label">LIVE</div>
+        </div>
+
+        <!-- Status Indicator (top right) -->
+        <div id="status-indicator">
+            <div class="status-dot"></div>
+            <span class="status-text">Initializing...</span>
+        </div>
+
+        <!-- Mode Controls (top left) -->
+        <div id="mode-controls">
+            <button id="attract-btn" class="mode-btn active" data-mode="attract">
+                <span class="mode-icon">🧲</span>
+                <span class="mode-label">Attract</span>
+            </button>
+            <button id="repel-btn" class="mode-btn" data-mode="repel">
+                <span class="mode-icon">💨</span>
+                <span class="mode-label">Repel</span>
+            </button>
+            <div class="theme-indicator">
+                <span class="theme-label">Theme:</span>
+                <span id="current-theme" class="theme-name">Rainbow</span>
+            </div>
+        </div>
+
+        <!-- Keyboard Shortcuts Panel (bottom right) -->
+        <div id="shortcuts-panel">
+            <div class="shortcut-item">
+                <kbd>SPACE</kbd>
+                <span>Toggle Mode</span>
+            </div>
+            <div class="shortcut-item">
+                <kbd>V</kbd>
+                <span>Toggle Camera</span>
+            </div>
+            <div class="shortcut-item">
+                <kbd>T</kbd>
+                <span>Change Theme</span>
+            </div>
+            <div class="shortcut-item">
+                <span class="gesture-hint">✊ Fist</span>
+                <span>Cycle Theme</span>
+            </div>
+        </div>
+
+        <!-- Particle Count Display -->
+        <div id="particle-count">
+            <span id="active-particles">0</span> particles
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh/face_mesh.js" crossorigin="anonymous"></script>
+    <script type="module" src="app.js"></script>
+</body>
+</html>
