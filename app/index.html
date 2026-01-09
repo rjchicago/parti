@@ -58,9 +58,33 @@
                 <span class="mode-icon">💨</span>
                 <span class="mode-label">Repel</span>
             </button>
-            <div class="theme-indicator">
-                <span class="theme-label">Theme:</span>
-                <span id="current-theme" class="theme-name">Rainbow</span>
+            <button id="rain-btn" class="mode-btn" data-mode="rain">
+                <span class="mode-icon">🌧️</span>
+                <span class="mode-label">Rain</span>
+            </button>
+            <button id="snow-btn" class="mode-btn" data-mode="snow">
+                <span class="mode-icon">❄️</span>
+                <span class="mode-label">Snow</span>
+            </button>
+            <div class="theme-selector">
+                <span class="theme-label">🎨 Theme:</span>
+                <select id="theme-select">
+                    <option value="0">Rainbow</option>
+                    <option value="1">Fire</option>
+                    <option value="2">Ocean</option>
+                    <option value="3">Galaxy</option>
+                    <option value="4">Matrix</option>
+                    <option value="5">White</option>
+                </select>
+            </div>
+            <div class="fist-action-selector">
+                <span class="fist-label">✊ Fist:</span>
+                <select id="fist-action">
+                    <option value="mode">Toggle Mode</option>
+                    <option value="camera">Toggle Camera</option>
+                    <option value="theme">Cycle Theme</option>
+                    <option value="none" selected>None</option>
+                </select>
             </div>
         </div>
 
@@ -79,8 +103,8 @@
                 <span>Change Theme</span>
             </div>
             <div class="shortcut-item">
-                <span class="gesture-hint">✊ Fist</span>
-                <span>Cycle Theme</span>
+                <kbd>↑ / ↓</kbd>
+                <span>+/- Particles</span>
             </div>
         </div>
 
@@ -88,6 +112,9 @@
         <div id="particle-count">
             <span id="active-particles">0</span> particles
         </div>
+
+        <!-- Reset Settings Link -->
+        <a href="#" id="reset-settings" class="reset-link">Reset Settings</a>
     </div>
 
     <!-- Scripts -->

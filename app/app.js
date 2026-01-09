@@ -1,22 +1,9 @@
 // ===== Parti - Particle Face & Hand Tracker =====
 
-// Golden ratio for organic distribution
-const PHI = 1.618033988749895;
-const PHI_INV = 0.618033988749895;
+import { ParticleSystem, THEME_NAMES } from './ParticleSystem.js';
 
 // ===== Configuration =====
 const CONFIG = {
-    particles: {
-        min: 8000,
-        max: 15000,
-        baseSpeed: 2,
-        attraction: 0.08,
-        repelDistance: 120,  // Max distance particles repel from landmarks
-        repelStrength: 0.15, // How strongly particles push away
-        friction: 0.95,
-        trailAlpha: 0.15,
-        returnSpeed: 0.02
-    },
     hand: {
         fingertipSpread: 3,
         fingerSegmentSpread: 8,
@@ -25,7 +12,6 @@ const CONFIG = {
     },
     face: {
         spread: 1.5,
-        depthMultiplier: 1.3,
         noseBoost: 1.5,
         cheekBoost: 1.2,
         eyeSocketBoost: 1.4,
@@ -33,40 +19,14 @@ const CONFIG = {
     }
 };
 
-// Color themes
-const THEMES = {
-    Rainbow: {
-        colors: ['#ff0000', '#ff7f00', '#ffff00', '#00ff00', '#0000ff', '#4b0082', '#9400d3'],
-        glow: true
-    },
-    Fire: {
-        colors: ['#ff0000', '#ff4400', '#ff8800', '#ffcc00', '#ffff00', '#ff6600'],
-        glow: true
-    },
-    Ocean: {
-        colors: ['#001a33', '#003366', '#004c99', '#0066cc', '#0099ff', '#00ccff', '#66ffff'],
-        glow: true
-    },
-    Galaxy: {
-        colors: ['#1a0033', '#330066', '#4d0099', '#6600cc', '#9933ff', '#cc66ff', '#ff99ff'],
-        glow: true
-    },
-    Matrix: {
-        colors: ['#003300', '#004400', '#006600', '#008800', '#00aa00', '#00cc00', '#00ff00'],
-        glow: true
-    }
-};
-
-const THEME_NAMES = Object.keys(THEMES);
-
 // Hand skeleton connections
 const HAND_CONNECTIONS = [
-    [0, 1], [1, 2], [2, 3], [3, 4],       // Thumb
-    [0, 5], [5, 6], [6, 7], [7, 8],       // Index
-    [0, 9], [9, 10], [10, 11], [11, 12],  // Middle
-    [0, 13], [13, 14], [14, 15], [15, 16], // Ring
-    [0, 17], [17, 18], [18, 19], [19, 20], // Pinky
-    [5, 9], [9, 13], [13, 17]              // Palm
+    [0, 1], [1, 2], [2, 3], [3, 4],
+    [0, 5], [5, 6], [6, 7], [7, 8],
+    [0, 9], [9, 10], [10, 11], [11, 12],
+    [0, 13], [13, 14], [14, 15], [15, 16],
+    [0, 17], [17, 18], [18, 19], [19, 20],
+    [5, 9], [9, 13], [13, 17]
 ];
 
 const FINGERTIP_INDICES = [4, 8, 12, 16, 20];
@@ -77,45 +37,80 @@ const FACE_LANDMARKS = {
     leftEye: [33, 7, 163, 144, 145, 153, 154, 155, 133, 173, 157, 158, 159, 160, 161, 246],
     rightEye: [362, 382, 381, 380, 374, 373, 390, 249, 263, 466, 388, 387, 386, 385, 384, 398],
     lips: [61, 146, 91, 181, 84, 17, 314, 405, 321, 375, 291, 308, 324, 318, 402, 317, 14, 87, 178, 88, 95, 78, 61],
-    lipsInner: [78, 95, 88, 178, 87, 14, 317, 402, 318, 324, 308, 415, 310, 311, 312, 13, 82, 81, 80, 191, 78],
-    faceOval: [10, 338, 297, 332, 284, 251, 389, 356, 454, 323, 361, 288, 397, 365, 379, 378, 400, 377, 152, 148, 176, 149, 150, 136, 172, 58, 132, 93, 234, 127, 162, 21, 54, 103, 67, 109, 10],
-    nose: [1, 2, 98, 327, 168, 6, 197, 195, 5, 4, 1],
-    leftEyebrow: [276, 283, 282, 295, 285],
-    rightEyebrow: [46, 53, 52, 65, 55]
+    faceOval: [10, 338, 297, 332, 284, 251, 389, 356, 454, 323, 361, 288, 397, 365, 379, 378, 400, 377, 152, 148, 176, 149, 150, 136, 172, 58, 132, 93, 234, 127, 162, 21, 54, 103, 67, 109, 10]
 };
 
-// Depth-enhanced landmarks (nose, cheekbones, eye sockets)
+// Depth-enhanced landmarks
 const DEPTH_LANDMARKS = {
     nose: [1, 2, 98, 327, 4, 5, 195, 197, 6, 168],
     cheekbones: [116, 123, 147, 187, 207, 213, 345, 352, 376, 411, 427, 433],
     eyeSockets: [33, 133, 362, 263, 159, 145, 386, 374]
 };
 
+// ===== Local Storage =====
+const STORAGE_KEY = 'parti-settings';
+
+const DEFAULT_SETTINGS = {
+    mode: 'attract',
+    theme: 0,
+    particleCount: 5000,
+    fistAction: 'none',
+    cameraVisible: true
+};
+
+function loadSettings() {
+    try {
+        const saved = localStorage.getItem(STORAGE_KEY);
+        if (saved) {
+            return { ...DEFAULT_SETTINGS, ...JSON.parse(saved) };
+        }
+    } catch (e) {
+        console.warn('Failed to load settings:', e);
+    }
+    return { ...DEFAULT_SETTINGS };
+}
+
+function saveSettings() {
+    try {
+        const settings = {
+            mode: state.mode,
+            theme: particleSystem?.currentTheme ?? 0,
+            particleCount: particleSystem?.getCount() ?? DEFAULT_SETTINGS.particleCount,
+            fistAction: state.fistAction,
+            cameraVisible: state.cameraVisible
+        };
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(settings));
+    } catch (e) {
+        console.warn('Failed to save settings:', e);
+    }
+}
+
+function resetSettings() {
+    localStorage.removeItem(STORAGE_KEY);
+    location.reload();
+}
+
 // ===== Global State =====
 let state = {
     mode: 'attract',
-    currentTheme: 0,
     cameraVisible: true,
     isRunning: false,
     handResults: null,
     faceResults: null,
     lastFistTime: 0,
     fistCooldown: 500,
-    particles: [],
-    landmarks: [],
-    canvasWidth: 0,
-    canvasHeight: 0
+    fistAction: 'none'
 };
 
 // DOM Elements
-let introScreen, app, particleCanvas, ctx;
+let introScreen, app, particleCanvas;
 let cameraFeed, overlayCanvas, overlayCtx;
 let statusIndicator, statusDot, statusText;
-let attractBtn, repelBtn, currentThemeEl;
-let particleCountEl;
-let cameraPreviewContainer;
+let attractBtn, repelBtn, rainBtn, snowBtn, themeSelect;
+let particleCountEl, cameraPreviewContainer, fistActionSelect;
 
-// MediaPipe instances
+// Core systems
+let particleSystem;
 let hands, faceMesh, camera;
 
 // ===== Initialization =====
@@ -126,7 +121,6 @@ function init() {
     introScreen = document.getElementById('intro-screen');
     app = document.getElementById('app');
     particleCanvas = document.getElementById('particle-canvas');
-    ctx = particleCanvas.getContext('2d');
     cameraFeed = document.getElementById('camera-feed');
     overlayCanvas = document.getElementById('overlay-canvas');
     overlayCtx = overlayCanvas.getContext('2d');
@@ -135,17 +129,47 @@ function init() {
     statusText = statusIndicator.querySelector('.status-text');
     attractBtn = document.getElementById('attract-btn');
     repelBtn = document.getElementById('repel-btn');
-    currentThemeEl = document.getElementById('current-theme');
+    rainBtn = document.getElementById('rain-btn');
+    snowBtn = document.getElementById('snow-btn');
+    themeSelect = document.getElementById('theme-select');
     particleCountEl = document.getElementById('active-particles');
     cameraPreviewContainer = document.getElementById('camera-preview-container');
+    fistActionSelect = document.getElementById('fist-action');
 
     // Setup event listeners
     document.getElementById('enable-camera-btn').addEventListener('click', startApp);
     attractBtn.addEventListener('click', () => setMode('attract'));
     repelBtn.addEventListener('click', () => setMode('repel'));
+    rainBtn.addEventListener('click', () => setMode('rain'));
+    snowBtn.addEventListener('click', () => setMode('snow'));
+    themeSelect.addEventListener('change', (e) => setTheme(parseInt(e.target.value)));
+    fistActionSelect.addEventListener('change', (e) => { 
+        state.fistAction = e.target.value;
+        saveSettings();
+    });
     
+    // Reset link
+    const resetLink = document.getElementById('reset-settings');
+    if (resetLink) {
+        resetLink.addEventListener('click', (e) => {
+            e.preventDefault();
+            resetSettings();
+        });
+    }
+
+    // Load saved settings and apply to UI
+    const savedSettings = loadSettings();
+    state.mode = savedSettings.mode;
+    state.fistAction = savedSettings.fistAction;
+    state.cameraVisible = savedSettings.cameraVisible;
+    
+    // Update dropdowns to match saved settings
+    themeSelect.value = savedSettings.theme;
+    fistActionSelect.value = savedSettings.fistAction;
+
     // Keyboard shortcuts
     document.addEventListener('keydown', handleKeyboard);
+    document.addEventListener('keyup', handleKeyUp);
 
     // Canvas resize
     window.addEventListener('resize', resizeCanvas);
@@ -174,7 +198,6 @@ function createIntroParticles() {
         container.appendChild(particle);
     }
 
-    // Add float animation
     const style = document.createElement('style');
     style.textContent = `
         @keyframes float {
@@ -188,7 +211,6 @@ function createIntroParticles() {
 }
 
 async function startApp() {
-    // Show loading state
     const btn = document.getElementById('enable-camera-btn');
     btn.innerHTML = '<span class="btn-icon">⏳</span><span class="btn-text">Loading...</span>';
     btn.disabled = true;
@@ -208,8 +230,21 @@ async function startApp() {
         introScreen.classList.add('hidden');
         app.classList.remove('hidden');
 
-        // Initialize particles
-        initParticles();
+        // Initialize particle system with saved settings
+        const savedSettings = loadSettings();
+        particleSystem = new ParticleSystem(particleCanvas, {
+            minParticles: savedSettings.particleCount,
+            maxParticles: savedSettings.particleCount
+        });
+        particleSystem.init();
+        particleSystem.setTheme(savedSettings.theme);
+        particleSystem.setMode(savedSettings.mode);
+        
+        // Apply saved mode to UI
+        setMode(savedSettings.mode);
+        
+        // Apply camera visibility
+        cameraPreviewContainer.style.display = savedSettings.cameraVisible ? 'block' : 'none';
 
         // Start animation loop
         state.isRunning = true;
@@ -260,16 +295,16 @@ async function initMediaPipe() {
     await camera.start();
 }
 
+// ===== MediaPipe Callbacks =====
 function onHandResults(results) {
     state.handResults = results;
-    
-    // Check for fist gesture to cycle theme
+
     if (results.multiHandLandmarks) {
         for (const landmarks of results.multiHandLandmarks) {
             if (detectFist(landmarks)) {
                 const now = Date.now();
                 if (now - state.lastFistTime > state.fistCooldown) {
-                    cycleTheme();
+                    performFistAction();
                     state.lastFistTime = now;
                 }
             }
@@ -282,76 +317,50 @@ function onFaceResults(results) {
 }
 
 function detectFist(landmarks) {
-    // Check if all fingertips are below their respective knuckles
     const fingertips = [8, 12, 16, 20];
     const knuckles = [5, 9, 13, 17];
-    
+
     let closedFingers = 0;
     for (let i = 0; i < fingertips.length; i++) {
         if (landmarks[fingertips[i]].y > landmarks[knuckles[i]].y) {
             closedFingers++;
         }
     }
-    
-    // Also check thumb
+
     if (landmarks[4].x > landmarks[3].x === landmarks[0].x < landmarks[9].x) {
         closedFingers++;
     }
-    
+
     return closedFingers >= 4;
 }
 
-// ===== Particle System =====
-function initParticles() {
-    const count = Math.floor(CONFIG.particles.min + Math.random() * (CONFIG.particles.max - CONFIG.particles.min));
-    state.particles = [];
-    
-    for (let i = 0; i < count; i++) {
-        state.particles.push(createParticle());
+function performFistAction() {
+    switch (state.fistAction) {
+        case 'theme':
+            cycleTheme();
+            break;
+        case 'mode':
+            cycleMode();
+            break;
+        case 'camera':
+            toggleCamera();
+            break;
     }
 }
 
-function createParticle() {
-    const theme = THEMES[THEME_NAMES[state.currentTheme]];
-    const color = theme.colors[Math.floor(Math.random() * theme.colors.length)];
-    
-    // Random flow direction for organic movement
-    const flowAngle = Math.random() * Math.PI * 2;
-    const flowSpeed = 0.5 + Math.random() * 1.5;
-    
-    return {
-        x: Math.random() * state.canvasWidth,
-        y: Math.random() * state.canvasHeight,
-        vx: (Math.random() - 0.5) * 2,
-        vy: (Math.random() - 0.5) * 2,
-        baseX: Math.random() * state.canvasWidth,
-        baseY: Math.random() * state.canvasHeight,
-        size: Math.random() * 2.5 + 0.5,
-        color: color,
-        alpha: Math.random() * 0.5 + 0.5,
-        targetX: null,
-        targetY: null,
-        // Flow properties for organic movement
-        flowAngle: flowAngle,
-        flowSpeed: flowSpeed,
-        phase: Math.random() * Math.PI * 2,  // Phase offset for wave motion
-        waveAmp: 0.3 + Math.random() * 0.5,  // Wave amplitude
-        targetSpread: 5
-    };
-}
-
-function updateParticles() {
-    // Collect all active landmarks
+// ===== Landmark Processing =====
+function processLandmarks() {
     const landmarks = [];
-    
+    const canvasWidth = particleCanvas.width;
+    const canvasHeight = particleCanvas.height;
+
     // Process hand landmarks
     if (state.handResults?.multiHandLandmarks) {
         for (const handLandmarks of state.handResults.multiHandLandmarks) {
             for (let i = 0; i < handLandmarks.length; i++) {
                 const lm = handLandmarks[i];
                 let spread = CONFIG.hand.fingerSegmentSpread;
-                
-                // Tapered spread based on landmark type
+
                 if (FINGERTIP_INDICES.includes(i)) {
                     spread = CONFIG.hand.fingertipSpread;
                 } else if (i === WRIST_INDEX || (i >= 1 && i <= 4)) {
@@ -359,17 +368,17 @@ function updateParticles() {
                 } else if ([5, 9, 13, 17].includes(i)) {
                     spread = CONFIG.hand.palmSpread * 0.8;
                 }
-                
+
                 landmarks.push({
-                    x: (1 - lm.x) * state.canvasWidth,
-                    y: lm.y * state.canvasHeight,
+                    x: (1 - lm.x) * canvasWidth,
+                    y: lm.y * canvasHeight,
                     spread: spread,
                     weight: CONFIG.hand.landmarkWeight
                 });
             }
         }
     }
-    
+
     // Process face landmarks
     if (state.faceResults?.multiFaceLandmarks) {
         for (const faceLandmarks of state.faceResults.multiFaceLandmarks) {
@@ -377,8 +386,7 @@ function updateParticles() {
                 const lm = faceLandmarks[i];
                 let spread = CONFIG.face.spread;
                 let depthBoost = 1.0;
-                
-                // Apply depth boost for specific features
+
                 if (DEPTH_LANDMARKS.nose.includes(i)) {
                     depthBoost = CONFIG.face.noseBoost;
                 } else if (DEPTH_LANDMARKS.cheekbones.includes(i)) {
@@ -386,10 +394,10 @@ function updateParticles() {
                 } else if (DEPTH_LANDMARKS.eyeSockets.includes(i)) {
                     depthBoost = CONFIG.face.eyeSocketBoost;
                 }
-                
+
                 landmarks.push({
-                    x: (1 - lm.x) * state.canvasWidth,
-                    y: lm.y * state.canvasHeight,
+                    x: (1 - lm.x) * canvasWidth,
+                    y: lm.y * canvasHeight,
                     z: (lm.z || 0) * depthBoost,
                     spread: spread,
                     weight: CONFIG.face.landmarkWeight * depthBoost
@@ -397,13 +405,14 @@ function updateParticles() {
             }
         }
     }
-    
-    state.landmarks = landmarks;
-    
-    // Update status based on detections
+
+    return landmarks;
+}
+
+function updateStatusFromDetections() {
     const hasHands = state.handResults?.multiHandLandmarks?.length > 0;
     const hasFace = state.faceResults?.multiFaceLandmarks?.length > 0;
-    
+
     if (hasHands && hasFace) {
         updateStatus('Face + Hands detected', 'detecting');
     } else if (hasHands) {
@@ -413,237 +422,104 @@ function updateParticles() {
     } else {
         updateStatus('Show your hands 👋', 'active');
     }
-    
-    // Distribute particles to landmarks using golden ratio
-    const particleCount = state.particles.length;
-    const landmarkCount = landmarks.length;
-    
-    if (landmarkCount > 0) {
-        for (let i = 0; i < particleCount; i++) {
-            const particle = state.particles[i];
-            
-            // Use golden ratio for distribution
-            const angle = i * PHI * Math.PI * 2;
-            const landmarkIndex = Math.floor((i * PHI_INV * landmarkCount) % landmarkCount);
-            const target = landmarks[landmarkIndex];
-            
-            // Add spread based on golden ratio spiral
-            const spiralR = Math.sqrt(i / particleCount) * target.spread;
-            const offsetX = Math.cos(angle) * spiralR;
-            const offsetY = Math.sin(angle) * spiralR;
-            
-            particle.targetX = target.x + offsetX;
-            particle.targetY = target.y + offsetY;
-            particle.targetSpread = target.spread;
-        }
-    } else {
-        // No landmarks - particles wander
-        for (const particle of state.particles) {
-            particle.targetX = null;
-            particle.targetY = null;
-        }
-    }
-    
-    // Physics update
-    for (const particle of state.particles) {
-        if (state.mode === 'attract') {
-            // Attract mode: pull particles toward their assigned landmark target
-            if (particle.targetX !== null) {
-                const dx = particle.targetX - particle.x;
-                const dy = particle.targetY - particle.y;
-                const dist = Math.sqrt(dx * dx + dy * dy);
-                
-                if (dist > 1) {
-                    particle.vx += (dx / dist) * CONFIG.particles.attraction * Math.min(dist * 0.1, 10);
-                    particle.vy += (dy / dist) * CONFIG.particles.attraction * Math.min(dist * 0.1, 10);
-                }
-            } else {
-                // No landmarks - return to base position
-                particle.vx += (particle.baseX - particle.x) * CONFIG.particles.returnSpeed;
-                particle.vy += (particle.baseY - particle.y) * CONFIG.particles.returnSpeed;
-            }
-        } else {
-            // Repel mode: particles flow freely but avoid ALL landmarks
-            const time = performance.now() * 0.001;  // Time in seconds
-            
-            // Continuous flowing movement using sine waves for organic motion
-            const waveX = Math.sin(time * 0.5 + particle.phase) * particle.waveAmp;
-            const waveY = Math.cos(time * 0.7 + particle.phase * 1.3) * particle.waveAmp;
-            
-            // Apply flow direction with wave modulation
-            particle.vx += Math.cos(particle.flowAngle + waveX) * particle.flowSpeed * 0.1;
-            particle.vy += Math.sin(particle.flowAngle + waveY) * particle.flowSpeed * 0.1;
-            
-            // Slowly drift flow angle for variety
-            particle.flowAngle += (Math.sin(time * 0.2 + particle.phase) * 0.01);
-            
-            // Push away from ANY nearby landmark
-            const repelDist = CONFIG.particles.repelDistance;
-            for (const landmark of landmarks) {
-                const dx = particle.x - landmark.x;
-                const dy = particle.y - landmark.y;
-                const dist = Math.sqrt(dx * dx + dy * dy);
-                
-                if (dist < repelDist && dist > 1) {
-                    // Stronger push when closer, fades to zero at repelDistance
-                    const repelForce = CONFIG.particles.repelStrength * (1 - dist / repelDist);
-                    particle.vx += (dx / dist) * repelForce * 12;
-                    particle.vy += (dy / dist) * repelForce * 12;
-                }
-            }
-        }
-        
-        // Apply friction (less friction in repel mode for continuous flow)
-        const friction = state.mode === 'repel' ? 0.98 : CONFIG.particles.friction;
-        particle.vx *= friction;
-        particle.vy *= friction;
-        
-        // Clamp velocity for stability
-        const maxSpeed = state.mode === 'repel' ? 4 : 8;
-        const speed = Math.sqrt(particle.vx * particle.vx + particle.vy * particle.vy);
-        if (speed > maxSpeed) {
-            particle.vx = (particle.vx / speed) * maxSpeed;
-            particle.vy = (particle.vy / speed) * maxSpeed;
-        }
-        
-        // Update position
-        particle.x += particle.vx;
-        particle.y += particle.vy;
-        
-        // Wrap around edges
-        if (particle.x < 0) particle.x = state.canvasWidth;
-        if (particle.x > state.canvasWidth) particle.x = 0;
-        if (particle.y < 0) particle.y = state.canvasHeight;
-        if (particle.y > state.canvasHeight) particle.y = 0;
-    }
-}
-
-function renderParticles() {
-    // Clear with trail effect
-    ctx.fillStyle = `rgba(5, 5, 8, ${1 - CONFIG.particles.trailAlpha})`;
-    ctx.fillRect(0, 0, state.canvasWidth, state.canvasHeight);
-    
-    const theme = THEMES[THEME_NAMES[state.currentTheme]];
-    
-    // Render particles
-    for (const particle of state.particles) {
-        ctx.beginPath();
-        ctx.arc(particle.x, particle.y, particle.size, 0, Math.PI * 2);
-        ctx.fillStyle = particle.color;
-        ctx.globalAlpha = particle.alpha;
-        ctx.fill();
-    }
-    
-    ctx.globalAlpha = 1;
-    
-    // Update particle count display
-    particleCountEl.textContent = state.particles.length.toLocaleString();
 }
 
 // ===== Overlay Drawing =====
 function drawOverlays() {
     overlayCtx.clearRect(0, 0, overlayCanvas.width, overlayCanvas.height);
-    
-    const scaleX = overlayCanvas.width / 1280;
-    const scaleY = overlayCanvas.height / 720;
-    
-    // Draw hand overlays
+
     if (state.handResults?.multiHandLandmarks) {
         state.handResults.multiHandLandmarks.forEach((landmarks, index) => {
             const color = index === 0 ? '#00f5ff' : '#ff00ff';
-            drawHandSkeleton(landmarks, color, scaleX, scaleY);
+            drawHandSkeleton(landmarks, color);
         });
     }
-    
-    // Draw face overlays
+
     if (state.faceResults?.multiFaceLandmarks) {
         for (const landmarks of state.faceResults.multiFaceLandmarks) {
-            drawFaceMesh(landmarks, scaleX, scaleY);
+            drawFaceMesh(landmarks);
         }
     }
 }
 
-function drawHandSkeleton(landmarks, color, scaleX, scaleY) {
+function drawHandSkeleton(landmarks, color) {
     overlayCtx.save();
     overlayCtx.scale(-1, 1);
     overlayCtx.translate(-overlayCanvas.width, 0);
-    
-    // Draw connections with glow
+
     overlayCtx.strokeStyle = color;
     overlayCtx.lineWidth = 2;
     overlayCtx.shadowColor = color;
     overlayCtx.shadowBlur = 10;
-    
+
     for (const [start, end] of HAND_CONNECTIONS) {
         const startLm = landmarks[start];
         const endLm = landmarks[end];
-        
+
         overlayCtx.beginPath();
         overlayCtx.moveTo(startLm.x * overlayCanvas.width, startLm.y * overlayCanvas.height);
         overlayCtx.lineTo(endLm.x * overlayCanvas.width, endLm.y * overlayCanvas.height);
         overlayCtx.stroke();
     }
-    
-    // Draw landmarks
+
     for (let i = 0; i < landmarks.length; i++) {
         const lm = landmarks[i];
         const isFingertip = FINGERTIP_INDICES.includes(i);
         const isWrist = i === WRIST_INDEX;
-        
         const radius = isFingertip || isWrist ? 6 : 3;
-        
+
         overlayCtx.beginPath();
         overlayCtx.arc(lm.x * overlayCanvas.width, lm.y * overlayCanvas.height, radius, 0, Math.PI * 2);
         overlayCtx.fillStyle = color;
         overlayCtx.fill();
     }
-    
+
     overlayCtx.restore();
 }
 
-function drawFaceMesh(landmarks, scaleX, scaleY) {
+function drawFaceMesh(landmarks) {
     overlayCtx.save();
     overlayCtx.scale(-1, 1);
     overlayCtx.translate(-overlayCanvas.width, 0);
     overlayCtx.lineWidth = 1;
-    
-    // Draw eyes in teal
+
+    // Eyes in teal
     overlayCtx.strokeStyle = '#00e5cc';
     overlayCtx.shadowColor = '#00e5cc';
     overlayCtx.shadowBlur = 5;
     drawLandmarkPath(FACE_LANDMARKS.leftEye, landmarks, true);
     drawLandmarkPath(FACE_LANDMARKS.rightEye, landmarks, true);
-    
-    // Draw lips in pink
+
+    // Lips in pink
     overlayCtx.strokeStyle = '#ff69b4';
     overlayCtx.shadowColor = '#ff69b4';
     drawLandmarkPath(FACE_LANDMARKS.lips, landmarks, true);
-    
-    // Draw face oval in cyan
+
+    // Face oval in cyan
     overlayCtx.strokeStyle = '#00f5ff';
     overlayCtx.shadowColor = '#00f5ff';
     overlayCtx.shadowBlur = 3;
     drawLandmarkPath(FACE_LANDMARKS.faceOval, landmarks, true);
-    
+
     overlayCtx.restore();
 }
 
 function drawLandmarkPath(indices, landmarks, close = false) {
     if (indices.length < 2) return;
-    
+
     overlayCtx.beginPath();
     overlayCtx.moveTo(
         landmarks[indices[0]].x * overlayCanvas.width,
         landmarks[indices[0]].y * overlayCanvas.height
     );
-    
+
     for (let i = 1; i < indices.length; i++) {
         overlayCtx.lineTo(
             landmarks[indices[i]].x * overlayCanvas.width,
             landmarks[indices[i]].y * overlayCanvas.height
         );
     }
-    
+
     if (close) overlayCtx.closePath();
     overlayCtx.stroke();
 }
@@ -651,37 +527,65 @@ function drawLandmarkPath(indices, landmarks, close = false) {
 // ===== Animation Loop =====
 function animate() {
     if (!state.isRunning) return;
-    
-    updateParticles();
-    renderParticles();
+
+    // Handle held arrow keys for particle count
+    updateParticleCount();
+
+    // Process landmarks and update particle system
+    const landmarks = processLandmarks();
+    particleSystem.setLandmarks(landmarks);
+
+    // Update status
+    updateStatusFromDetections();
+
+    // Update and render particles
+    particleSystem.update();
+    particleSystem.render();
+
+    // Draw overlays on camera preview
     drawOverlays();
-    
+
+    // Update particle count display
+    particleCountEl.textContent = particleSystem.getCount().toLocaleString();
+
     requestAnimationFrame(animate);
 }
 
 // ===== UI Controls =====
 function setMode(mode) {
     state.mode = mode;
-    
+    if (particleSystem) particleSystem.setMode(mode);
+
     attractBtn.classList.toggle('active', mode === 'attract');
     repelBtn.classList.toggle('active', mode === 'repel');
+    rainBtn.classList.toggle('active', mode === 'rain');
+    snowBtn.classList.toggle('active', mode === 'snow');
+    
+    saveSettings();
+}
+
+function cycleMode() {
+    const modes = ['attract', 'repel', 'rain', 'snow'];
+    const currentIndex = modes.indexOf(state.mode);
+    const nextMode = modes[(currentIndex + 1) % modes.length];
+    setMode(nextMode);
+}
+
+function setTheme(themeIndex) {
+    particleSystem.setTheme(themeIndex);
+    themeSelect.value = themeIndex;
+    saveSettings();
 }
 
 function cycleTheme() {
-    state.currentTheme = (state.currentTheme + 1) % THEME_NAMES.length;
-    const themeName = THEME_NAMES[state.currentTheme];
-    currentThemeEl.textContent = themeName;
-    
-    // Update particle colors
-    const theme = THEMES[themeName];
-    for (const particle of state.particles) {
-        particle.color = theme.colors[Math.floor(Math.random() * theme.colors.length)];
-    }
+    const newTheme = particleSystem.cycleTheme();
+    themeSelect.value = newTheme;
 }
 
 function toggleCamera() {
     state.cameraVisible = !state.cameraVisible;
     cameraPreviewContainer.style.display = state.cameraVisible ? 'block' : 'none';
+    saveSettings();
 }
 
 function updateStatus(text, statusClass) {
@@ -689,11 +593,19 @@ function updateStatus(text, statusClass) {
     statusDot.className = 'status-dot ' + statusClass;
 }
 
+// Track held keys for continuous particle adjustment with acceleration
+const heldKeys = { 
+    ArrowUp: false, 
+    ArrowDown: false,
+    ArrowUpStart: 0,
+    ArrowDownStart: 0
+};
+
 function handleKeyboard(e) {
     switch (e.code) {
         case 'Space':
             e.preventDefault();
-            setMode(state.mode === 'attract' ? 'repel' : 'attract');
+            cycleMode();
             break;
         case 'KeyV':
             toggleCamera();
@@ -701,22 +613,66 @@ function handleKeyboard(e) {
         case 'KeyT':
             cycleTheme();
             break;
+        case 'ArrowUp':
+            e.preventDefault();
+            if (!heldKeys.ArrowUp) {
+                heldKeys.ArrowUp = true;
+                heldKeys.ArrowUpStart = performance.now();
+            }
+            break;
+        case 'ArrowDown':
+            e.preventDefault();
+            if (!heldKeys.ArrowDown) {
+                heldKeys.ArrowDown = true;
+                heldKeys.ArrowDownStart = performance.now();
+            }
+            break;
+    }
+}
+
+function handleKeyUp(e) {
+    if (e.code === 'ArrowUp') {
+        heldKeys.ArrowUp = false;
+        saveSettings(); // Save particle count when done adjusting
+    }
+    if (e.code === 'ArrowDown') {
+        heldKeys.ArrowDown = false;
+        saveSettings(); // Save particle count when done adjusting
+    }
+}
+
+// Get rate multiplier based on hold duration
+function getHoldMultiplier(startTime) {
+    const holdDuration = (performance.now() - startTime) / 1000; // seconds
+    if (holdDuration >= 5) return 100;  // 100x after 10s
+    if (holdDuration >= 2) return 10;    // 10x after 3s
+    return 1;                             // 1x base rate
+}
+
+// Called each frame to handle held keys
+function updateParticleCount() {
+    if (!particleSystem) return;
+    
+    const baseRate = 1; // 1 particle per frame at base speed
+    
+    if (heldKeys.ArrowUp) {
+        const multiplier = getHoldMultiplier(heldKeys.ArrowUpStart);
+        particleSystem.addParticles(baseRate * multiplier);
+    }
+    if (heldKeys.ArrowDown) {
+        const multiplier = getHoldMultiplier(heldKeys.ArrowDownStart);
+        particleSystem.removeParticles(baseRate * multiplier);
     }
 }
 
 function resizeCanvas() {
-    state.canvasWidth = window.innerWidth;
-    state.canvasHeight = window.innerHeight;
-    
-    particleCanvas.width = state.canvasWidth;
-    particleCanvas.height = state.canvasHeight;
-    
+    particleCanvas.width = window.innerWidth;
+    particleCanvas.height = window.innerHeight;
+
     overlayCanvas.width = 256;
     overlayCanvas.height = 144;
-    
-    // Update particle base positions
-    for (const particle of state.particles) {
-        particle.baseX = Math.random() * state.canvasWidth;
-        particle.baseY = Math.random() * state.canvasHeight;
+
+    if (particleSystem) {
+        particleSystem.resize();
     }
 }
