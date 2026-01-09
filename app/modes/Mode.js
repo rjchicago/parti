@@ -61,4 +61,12 @@ export class Mode {
     getTrailAlpha() {
         return 0.15;
     }
+
+    /**
+     * Get preset theme index for this mode (null = no preset)
+     * @returns {number|null}
+     */
+    getPresetTheme() {
+        return null;
+    }
 }

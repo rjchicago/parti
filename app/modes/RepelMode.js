@@ -46,4 +46,8 @@ export class RepelMode extends Mode {
     getMaxSpeed() {
         return 4;
     }
+
+    getPresetTheme() {
+        return 1; // Fire
+    }
 }

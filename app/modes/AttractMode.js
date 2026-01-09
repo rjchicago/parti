@@ -36,4 +36,8 @@ export class AttractMode extends Mode {
     getMaxSpeed() {
         return 8;
     }
+
+    getPresetTheme() {
+        return 4; // Matrix
+    }
 }

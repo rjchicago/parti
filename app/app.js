@@ -554,7 +554,16 @@ function animate() {
 // ===== UI Controls =====
 function setMode(mode) {
     state.mode = mode;
-    if (particleSystem) particleSystem.setMode(mode);
+    if (particleSystem) {
+        particleSystem.setMode(mode);
+        
+        // Apply preset theme for this mode
+        const presetTheme = particleSystem.currentMode.getPresetTheme();
+        if (presetTheme !== null) {
+            particleSystem.setTheme(presetTheme);
+            themeSelect.value = presetTheme;
+        }
+    }
 
     attractBtn.classList.toggle('active', mode === 'attract');
     repelBtn.classList.toggle('active', mode === 'repel');

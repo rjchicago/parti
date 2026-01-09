@@ -91,4 +91,8 @@ export class RainMode extends Mode {
         // Wrap if somehow goes too high
         if (particle.y < -50) particle.y = canvasSize.height;
     }
+
+    getPresetTheme() {
+        return 2; // Ocean
+    }
 }
