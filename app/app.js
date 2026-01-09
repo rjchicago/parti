@@ -95,6 +95,7 @@ let state = {
     mode: 'attract',
     cameraVisible: true,
     isRunning: false,
+    paused: false,
     handResults: null,
     faceResults: null,
     lastFistTime: 0,
@@ -528,25 +529,27 @@ function drawLandmarkPath(indices, landmarks, close = false) {
 function animate() {
     if (!state.isRunning) return;
 
-    // Handle held arrow keys for particle count
+    // Handle held arrow keys for particle count (even when paused)
     updateParticleCount();
 
-    // Process landmarks and update particle system
-    const landmarks = processLandmarks();
-    particleSystem.setLandmarks(landmarks);
+    if (!state.paused) {
+        // Process landmarks and update particle system
+        const landmarks = processLandmarks();
+        particleSystem.setLandmarks(landmarks);
 
-    // Update status
-    updateStatusFromDetections();
+        // Update status
+        updateStatusFromDetections();
 
-    // Update and render particles
-    particleSystem.update();
-    particleSystem.render();
+        // Update and render particles
+        particleSystem.update();
+        particleSystem.render();
 
-    // Draw overlays on camera preview
-    drawOverlays();
+        // Draw overlays on camera preview
+        drawOverlays();
 
-    // Update particle count display
-    particleCountEl.textContent = particleSystem.getCount().toLocaleString();
+        // Update particle count display
+        particleCountEl.textContent = particleSystem.getCount().toLocaleString();
+    }
 
     requestAnimationFrame(animate);
 }
@@ -597,6 +600,11 @@ function toggleCamera() {
     saveSettings();
 }
 
+function togglePause() {
+    state.paused = !state.paused;
+    updateStatus(state.paused ? 'Paused' : 'Tracking', state.paused ? 'warning' : 'active');
+}
+
 function updateStatus(text, statusClass) {
     statusText.textContent = text;
     statusDot.className = 'status-dot ' + statusClass;
@@ -621,6 +629,9 @@ function handleKeyboard(e) {
             break;
         case 'KeyT':
             cycleTheme();
+            break;
+        case 'KeyP':
+            togglePause();
             break;
         case 'ArrowUp':
             e.preventDefault();
