@@ -1,4 +1,5 @@
 import { Mode } from './Mode.js';
+import { FaceMask } from './FaceMask.js';
 
 // Katakana + some symbols for authentic Matrix look
 const MATRIX_CHARS = 'アイウエオカキクケコサシスセソタチツテトナニヌネノハヒフヘホマミムメモヤユヨラリルレロワヲン0123456789:・."=*+-<>¦|_';
@@ -20,6 +21,14 @@ export class MatrixMode extends Mode {
         // Trail settings
         this.trailLength = 25; // Number of characters in trail
         this.charChangeRate = 0.02; // Probability of character changing per frame
+        
+        this.landmarks = [];
+        
+        // Face mask with Matrix green
+        this.faceMask = new FaceMask({ 
+            useRainbow: false,
+            colors: ['#00ff00']
+        });
     }
 
     initStreams(canvasSize) {
@@ -118,6 +127,9 @@ export class MatrixMode extends Mode {
         
         ctx.shadowBlur = 0;
         ctx.globalAlpha = 1;
+        
+        // Draw face mask overlay
+        this.faceMask.draw(ctx, this.landmarks, canvasSize);
     }
 
     // Override to not render regular particles
@@ -126,8 +138,9 @@ export class MatrixMode extends Mode {
     }
 
     updateParticle(particle, landmarks, canvasSize) {
+        // Store landmarks for face mask
+        this.landmarks = landmarks;
         // Particles are hidden, but we can still use them for interactions
-        // For now, just keep them stationary
     }
 
     initParticle(particle, canvasSize) {

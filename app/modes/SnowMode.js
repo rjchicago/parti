@@ -1,4 +1,5 @@
 import { Mode } from './Mode.js';
+import { FaceMask } from './FaceMask.js';
 
 /**
  * Snow mode: particles fall gently from top, stop and build up on landmarks
@@ -10,9 +11,18 @@ export class SnowMode extends Mode {
         this.terminalVelocity = 1;
         this.wobbleStrength = 0.15;
         this.collisionRadius = 60;
+        this.landmarks = [];
+        
+        // Face mask with white/ice color
+        this.faceMask = new FaceMask({ 
+            useRainbow: false,
+            colors: ['#ffffff']
+        });
     }
 
     updateParticle(particle, landmarks, canvasSize) {
+        // Store landmarks for face mask
+        this.landmarks = landmarks;
         // Check if particle is near any landmark
         let nearLandmark = false;
         
@@ -66,6 +76,11 @@ export class SnowMode extends Mode {
     // Shorter trails for crisp snowflakes
     getTrailAlpha() {
         return 0.08;
+    }
+
+    onAfterRender(ctx, canvasSize) {
+        // Draw face mask overlay
+        this.faceMask.draw(ctx, this.landmarks, canvasSize);
     }
 
     handleEdges(particle, canvasSize) {
