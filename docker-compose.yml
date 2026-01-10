@@ -10,7 +10,7 @@ services:
     restart: unless-stopped
     healthcheck:
       test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost/health"]
-      interval: 30s
+      interval: 5s
       timeout: 3s
-      retries: 3
-      start_period: 5s
+      retries: 5
+      start_period: 2s
