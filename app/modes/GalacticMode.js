@@ -3,15 +3,11 @@ import { Mode } from './Mode.js';
 export class GalacticMode extends Mode {
     constructor() {
         super('galactic', '🌌');
-        this.parallaxStrength = 0.02;
         this.twinkleSpeed = 0.005;
         this.driftSpeed = 0.1;
         
-        // Head tracking
-        this.lastHeadX = 0.5;
-        this.lastHeadY = 0.5;
-        this.headVelX = 0;
-        this.headVelY = 0;
+        // Hand interaction - stars twinkle when hands pass over
+        this.handTwinkleRadius = 100; // pixels
         
         // Shooting stars
         this.shootingStars = [];
@@ -83,36 +79,20 @@ export class GalacticMode extends Mode {
     }
 
     updateParticle(particle, landmarks, canvasSize) {
-        // Calculate head position from face landmarks
-        let headX = 0.5, headY = 0.5;
-        if (landmarks.length > 0) {
-            // Find center of face landmarks
-            let sumX = 0, sumY = 0, count = 0;
-            for (const lm of landmarks) {
-                if (lm.type === 'face') {
-                    sumX += lm.x / canvasSize.width;
-                    sumY += lm.y / canvasSize.height;
-                    count++;
+        // Check for hand proximity - stars twinkle brighter when hands pass over
+        particle.handTwinkle = 0;
+        for (const lm of landmarks) {
+            if (lm.type === 'hand') {
+                const dx = particle.x - lm.x;
+                const dy = particle.y - lm.y;
+                const dist = Math.sqrt(dx * dx + dy * dy);
+                if (dist < this.handTwinkleRadius) {
+                    // Closer = brighter twinkle
+                    const intensity = 1 - (dist / this.handTwinkleRadius);
+                    particle.handTwinkle = Math.max(particle.handTwinkle, intensity);
                 }
             }
-            if (count > 0) {
-                headX = sumX / count;
-                headY = sumY / count;
-            }
         }
-        
-        // Smooth head tracking
-        this.headVelX = (headX - this.lastHeadX) * 0.3;
-        this.headVelY = (headY - this.lastHeadY) * 0.3;
-        this.lastHeadX += (headX - this.lastHeadX) * 0.1;
-        this.lastHeadY += (headY - this.lastHeadY) * 0.1;
-        
-        // Parallax effect - particles at different "depths" move differently
-        const depth = particle.depth || (particle.depth = 0.2 + Math.random() * 0.8);
-        
-        // Move opposite to head movement for parallax feel
-        particle.vx -= this.headVelX * this.parallaxStrength * depth * canvasSize.width;
-        particle.vy -= this.headVelY * this.parallaxStrength * depth * canvasSize.height;
         
         // Gentle cosmic drift
         const time = performance.now() * 0.0001;
@@ -123,7 +103,7 @@ export class GalacticMode extends Mode {
         particle.vx *= 0.95;
         particle.vy *= 0.95;
         
-        // Twinkle effect (stored in particle for rendering)
+        // Base twinkle effect
         particle.twinkle = 0.5 + 0.5 * Math.sin(performance.now() * this.twinkleSpeed + particle.phase * 10);
     }
 
@@ -199,11 +179,20 @@ export class GalacticMode extends Mode {
     }
 
     getParticleAlpha(particle) {
-        // Apply twinkle effect
+        // Base twinkle
+        let alpha = particle.alpha;
         if (particle.twinkle !== undefined) {
-            return particle.alpha * (0.4 + particle.twinkle * 0.6);
+            alpha = particle.alpha * (0.4 + particle.twinkle * 0.6);
         }
-        return particle.alpha;
+        
+        // Hand proximity boost - stars flash brighter when hands pass over
+        if (particle.handTwinkle > 0) {
+            // Boost to full brightness with sparkle
+            const sparkle = 0.5 + 0.5 * Math.sin(performance.now() * 0.02 + particle.phase * 5);
+            alpha = Math.min(1, alpha + particle.handTwinkle * sparkle);
+        }
+        
+        return alpha;
     }
 
     getMaxSpeed() {

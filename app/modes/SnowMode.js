@@ -6,8 +6,8 @@ import { Mode } from './Mode.js';
 export class SnowMode extends Mode {
     constructor() {
         super('snow', '❄️');
-        this.gravity = 0.08;
-        this.terminalVelocity = 2;
+        this.gravity = 0.04;
+        this.terminalVelocity = 1;
         this.wobbleStrength = 0.15;
         this.collisionRadius = 60;
     }
