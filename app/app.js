@@ -93,10 +93,21 @@ function resetSettings() {
 }
 
 // ===== Global State =====
-// Detect mobile device
+// Detect mobile device (can override with ?layout=mobile or ?layout=desktop)
 function isMobileDevice() {
-    return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) ||
-           (window.innerWidth <= 768);
+    const urlParams = new URLSearchParams(window.location.search);
+    const layoutParam = urlParams.get('layout');
+    
+    if (layoutParam === 'mobile') return true;
+    if (layoutParam === 'desktop') return false;
+    
+    // Auto-detect - multiple methods for better iOS Safari support
+    const userAgentMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+    const touchDevice = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+    const smallScreen = window.innerWidth <= 768;
+    const isIPad = /Macintosh/i.test(navigator.userAgent) && navigator.maxTouchPoints > 1; // iPad with iPadOS
+    
+    return userAgentMobile || isIPad || (touchDevice && smallScreen);
 }
 
 let state = {
@@ -200,6 +211,12 @@ function init() {
 
     // Apply initial layout (mobile detection)
     applyLayout();
+    
+    // Show detected layout on landing page
+    const layoutIndicator = document.getElementById('layout-indicator');
+    if (layoutIndicator) {
+        layoutIndicator.textContent = `Layout: ${state.mobileLayout ? 'Mobile' : 'Desktop'}`;
+    }
 
     // Create intro particles
     createIntroParticles();
@@ -647,10 +664,21 @@ function setMode(mode) {
 }
 
 function cycleMode() {
+    cycleModeDown();
+}
+
+function cycleModeDown() {
     const modes = ['party', 'attract', 'repel', 'rain', 'snow', 'galactic', 'matrix', 'gravity'];
     const currentIndex = modes.indexOf(state.mode);
     const nextMode = modes[(currentIndex + 1) % modes.length];
     setMode(nextMode);
+}
+
+function cycleModeUp() {
+    const modes = ['party', 'attract', 'repel', 'rain', 'snow', 'galactic', 'matrix', 'gravity'];
+    const currentIndex = modes.indexOf(state.mode);
+    const prevMode = modes[(currentIndex - 1 + modes.length) % modes.length];
+    setMode(prevMode);
 }
 
 function setTheme(themeIndex) {
@@ -748,10 +776,10 @@ function updateStatus(text, statusClass) {
 
 // Track held keys for continuous particle adjustment with acceleration
 const heldKeys = { 
-    ArrowUp: false, 
-    ArrowDown: false,
-    ArrowUpStart: 0,
-    ArrowDownStart: 0
+    ArrowLeft: false, 
+    ArrowRight: false,
+    ArrowLeftStart: 0,
+    ArrowRightStart: 0
 };
 
 function handleKeyboard(e) {
@@ -777,28 +805,36 @@ function handleKeyboard(e) {
             break;
         case 'ArrowUp':
             e.preventDefault();
-            if (!heldKeys.ArrowUp) {
-                heldKeys.ArrowUp = true;
-                heldKeys.ArrowUpStart = performance.now();
-            }
+            cycleModeUp();
             break;
         case 'ArrowDown':
             e.preventDefault();
-            if (!heldKeys.ArrowDown) {
-                heldKeys.ArrowDown = true;
-                heldKeys.ArrowDownStart = performance.now();
+            cycleModeDown();
+            break;
+        case 'ArrowRight':
+            e.preventDefault();
+            if (!heldKeys.ArrowRight) {
+                heldKeys.ArrowRight = true;
+                heldKeys.ArrowRightStart = performance.now();
+            }
+            break;
+        case 'ArrowLeft':
+            e.preventDefault();
+            if (!heldKeys.ArrowLeft) {
+                heldKeys.ArrowLeft = true;
+                heldKeys.ArrowLeftStart = performance.now();
             }
             break;
     }
 }
 
 function handleKeyUp(e) {
-    if (e.code === 'ArrowUp') {
-        heldKeys.ArrowUp = false;
+    if (e.code === 'ArrowRight') {
+        heldKeys.ArrowRight = false;
         saveSettings(); // Save particle count when done adjusting
     }
-    if (e.code === 'ArrowDown') {
-        heldKeys.ArrowDown = false;
+    if (e.code === 'ArrowLeft') {
+        heldKeys.ArrowLeft = false;
         saveSettings(); // Save particle count when done adjusting
     }
 }
@@ -817,12 +853,12 @@ function updateParticleCount() {
     
     const baseRate = 1; // 1 particle per frame at base speed
     
-    if (heldKeys.ArrowUp) {
-        const multiplier = getHoldMultiplier(heldKeys.ArrowUpStart);
+    if (heldKeys.ArrowRight) {
+        const multiplier = getHoldMultiplier(heldKeys.ArrowRightStart);
         particleSystem.addParticles(baseRate * multiplier);
     }
-    if (heldKeys.ArrowDown) {
-        const multiplier = getHoldMultiplier(heldKeys.ArrowDownStart);
+    if (heldKeys.ArrowLeft) {
+        const multiplier = getHoldMultiplier(heldKeys.ArrowLeftStart);
         particleSystem.removeParticles(baseRate * multiplier);
     }
 }

@@ -159,6 +159,14 @@ html, body {
     opacity: 0.6;
 }
 
+.layout-indicator {
+    margin-top: 0.5rem;
+    font-size: 0.75rem;
+    color: var(--accent-cyan);
+    opacity: 0.5;
+    font-family: 'Rajdhani', monospace;
+}
+
 /* Intro Background Particles */
 .intro-bg-particles {
     position: absolute;
