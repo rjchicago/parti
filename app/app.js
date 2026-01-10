@@ -410,6 +410,7 @@ function processLandmarks() {
     // Eye center landmarks (approximate centers)
     const LEFT_EYE_CENTER = 159;  // Center of left eye
     const RIGHT_EYE_CENTER = 386; // Center of right eye
+    const NOSE_BRIDGE = 6;        // Nose bridge between eyes (stable anchor)
     
     // Lip landmarks for animated mouth
     const UPPER_LIP_CENTER = 13;  // Top center of upper lip
@@ -437,6 +438,7 @@ function processLandmarks() {
                 let feature = null;
                 if (i === LEFT_EYE_CENTER) feature = 'leftEye';
                 else if (i === RIGHT_EYE_CENTER) feature = 'rightEye';
+                else if (i === NOSE_BRIDGE) feature = 'noseBridge';
                 else if (i === UPPER_LIP_CENTER) feature = 'upperLip';
                 else if (i === LOWER_LIP_CENTER) feature = 'lowerLip';
                 else if (i === LEFT_MOUTH_CORNER) feature = 'leftMouth';

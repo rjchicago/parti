@@ -131,7 +131,108 @@ export class MatrixMode extends Mode {
         // Draw face mask overlay
         if (options.maskVisible !== false) {
             this.faceMask.draw(ctx, this.landmarks, canvasSize);
+            this.drawSunglasses(ctx, this.landmarks);
         }
+    }
+
+    drawSunglasses(ctx, landmarks) {
+        if (!landmarks || landmarks.length === 0) return;
+
+        // Find nose bridge (stable anchor) and eyes for sizing
+        const noseBridge = landmarks.find(lm => lm.feature === 'noseBridge');
+        const leftEye = landmarks.find(lm => lm.feature === 'leftEye');
+        const rightEye = landmarks.find(lm => lm.feature === 'rightEye');
+        
+        if (!noseBridge || !leftEye || !rightEye) return;
+
+        // Calculate dimensions based on eye distance
+        const eyeDistance = Math.sqrt(
+            Math.pow(rightEye.x - leftEye.x, 2) + 
+            Math.pow(rightEye.y - leftEye.y, 2)
+        );
+        const baseLensWidth = eyeDistance * 0.45;
+        const baseLensHeight = eyeDistance * 0.25;
+        
+        // Calculate angle from eyes (for head tilt)
+        const angle = Math.atan2(rightEye.y - leftEye.y, rightEye.x - leftEye.x);
+        
+        // Calculate head yaw (left/right rotation) based on nose offset from eye midpoint
+        const eyeMidX = (leftEye.x + rightEye.x) / 2;
+        const eyeMidY = (leftEye.y + rightEye.y) / 2;
+        const noseOffset = (noseBridge.x - eyeMidX) / eyeDistance;
+        // noseOffset: negative = head turned right, positive = head turned left
+        const headYaw = Math.max(-0.5, Math.min(0.5, noseOffset * 2));
+        
+        // Position lenses relative to nose bridge (more stable than eye tracking)
+        const halfEyeDist = eyeDistance / 2;
+        const leftLensX = noseBridge.x - Math.cos(angle) * halfEyeDist;
+        const leftLensY = noseBridge.y - Math.sin(angle) * halfEyeDist;
+        const rightLensX = noseBridge.x + Math.cos(angle) * halfEyeDist;
+        const rightLensY = noseBridge.y + Math.sin(angle) * halfEyeDist;
+
+        ctx.save();
+        ctx.globalAlpha = 0.9;
+        
+        // Adjust lens widths based on head rotation (3D perspective)
+        // When head turns right, right lens appears wider, left lens narrower
+        const leftLensWidth = baseLensWidth * (1 - headYaw * 0.5);
+        const rightLensWidth = baseLensWidth * (1 + headYaw * 0.5);
+        
+        // Base wrap angle + additional based on head rotation
+        const baseWrap = 0.2;
+        const leftWrap = baseWrap + headYaw * 0.4;
+        const rightWrap = baseWrap - headYaw * 0.4;
+        
+        // Left lens - curved wrap with 3D perspective
+        ctx.save();
+        ctx.translate(leftLensX, leftLensY);
+        ctx.rotate(angle);
+        ctx.transform(1, 0, -Math.sin(leftWrap), 1, 0, 0);
+        ctx.beginPath();
+        ctx.ellipse(0, 0, leftLensWidth, baseLensHeight, 0, 0, Math.PI * 2);
+        ctx.fillStyle = '#001100';
+        ctx.fill();
+        ctx.strokeStyle = '#00ff00';
+        ctx.lineWidth = 2;
+        ctx.shadowColor = '#00ff00';
+        ctx.shadowBlur = 8;
+        ctx.stroke();
+        ctx.restore();
+        
+        // Right lens - curved wrap with 3D perspective
+        ctx.save();
+        ctx.translate(rightLensX, rightLensY);
+        ctx.rotate(angle);
+        ctx.transform(1, 0, Math.sin(rightWrap), 1, 0, 0);
+        ctx.beginPath();
+        ctx.ellipse(0, 0, rightLensWidth, baseLensHeight, 0, 0, Math.PI * 2);
+        ctx.fillStyle = '#001100';
+        ctx.fill();
+        ctx.strokeStyle = '#00ff00';
+        ctx.lineWidth = 2;
+        ctx.shadowColor = '#00ff00';
+        ctx.shadowBlur = 8;
+        ctx.stroke();
+        ctx.restore();
+        
+        // Draw curved bridge between lenses
+        const bridgeLeftX = leftLensX + Math.cos(angle) * leftLensWidth;
+        const bridgeLeftY = leftLensY + Math.sin(angle) * leftLensWidth;
+        const bridgeRightX = rightLensX - Math.cos(angle) * rightLensWidth;
+        const bridgeRightY = rightLensY - Math.sin(angle) * rightLensWidth;
+        const bridgeMidX = noseBridge.x;
+        const bridgeMidY = noseBridge.y - baseLensHeight * 0.3; // Slight curve upward
+        
+        ctx.beginPath();
+        ctx.moveTo(bridgeLeftX, bridgeLeftY);
+        ctx.quadraticCurveTo(bridgeMidX, bridgeMidY, bridgeRightX, bridgeRightY);
+        ctx.strokeStyle = '#00ff00';
+        ctx.lineWidth = 3;
+        ctx.shadowColor = '#00ff00';
+        ctx.shadowBlur = 5;
+        ctx.stroke();
+        
+        ctx.restore();
     }
 
     // Override to not render regular particles
