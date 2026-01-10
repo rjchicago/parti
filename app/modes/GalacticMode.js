@@ -117,7 +117,7 @@ export class GalacticMode extends Mode {
         particle.twinkle = 0.5 + 0.5 * Math.sin(performance.now() * this.twinkleSpeed + particle.phase * 10);
     }
 
-    onBeforeUpdate(particles, canvasSize) {
+    onBeforeUpdate(particles, landmarks, canvasSize) {
         const now = performance.now();
         
         // Maybe spawn a new shooting star

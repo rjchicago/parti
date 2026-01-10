@@ -66,7 +66,10 @@ export class MatrixMode extends Mode {
         return MATRIX_CHARS[Math.floor(Math.random() * MATRIX_CHARS.length)];
     }
 
-    onBeforeUpdate(particles, canvasSize) {
+    onBeforeUpdate(particles, landmarks, canvasSize) {
+        // Store landmarks for face mask
+        this.landmarks = landmarks;
+        
         // Initialize streams if needed
         if (!this.initialized || this.streams.length === 0) {
             this.initStreams(canvasSize);

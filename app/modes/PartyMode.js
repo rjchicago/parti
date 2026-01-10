@@ -87,7 +87,7 @@ export class PartyMode extends Mode {
         }
     }
 
-    onBeforeUpdate(particles, canvasSize) {
+    onBeforeUpdate(particles, landmarks, canvasSize) {
         const now = performance.now();
         if (now - this.lastBurstTime > this.burstInterval) {
             this.lastBurstTime = now;

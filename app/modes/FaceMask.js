@@ -173,11 +173,12 @@ export class FaceMask {
         // Chattering effect - slight vertical oscillation
         const chatter = Math.sin(time * 40) * 1.5;
         
-        // Mouth dimensions
+        // Mouth dimensions (10% wider border)
         const mouthHeight = 36;
-        const mouthX = leftMouth.x - 8;
+        const mouthPadding = mouthWidth * 0.1; // 10% padding on each side
+        const mouthX = leftMouth.x - mouthPadding;
         const mouthY = mouthCenterY - mouthHeight / 2 + chatter;
-        const mouthW = mouthWidth + 16;
+        const mouthW = mouthWidth + mouthPadding * 2;
         const borderRadius = 10;
         
         // Draw dark outer mouth border
@@ -187,12 +188,12 @@ export class FaceMask {
         ctx.roundRect(mouthX, mouthY, mouthW, mouthHeight, borderRadius);
         ctx.stroke();
         
-        // Teeth grid: 4 columns, 2 rows
+        // Teeth grid: 4 columns, 2 rows (use original mouth width, not padded border)
         const teethCols = 4;
         const teethRows = 2;
         const teethPadding = 6;
         const teethGap = 3;
-        const teethAreaW = mouthW - teethPadding * 2;
+        const teethAreaW = mouthWidth - teethPadding * 2;  // Original width, not mouthW
         const teethAreaH = mouthHeight - teethPadding * 2;
         const toothW = (teethAreaW - teethGap * (teethCols - 1)) / teethCols;
         const toothH = (teethAreaH - teethGap * (teethRows - 1)) / teethRows;
@@ -203,9 +204,12 @@ export class FaceMask {
         ctx.strokeStyle = 'rgba(255, 255, 255, 0.5)';
         ctx.lineWidth = 1;
         
+        // Center teeth within the wider border
+        const teethStartX = mouthX + mouthPadding + teethPadding;
+        
         for (let row = 0; row < teethRows; row++) {
             for (let col = 0; col < teethCols; col++) {
-                const x = mouthX + teethPadding + col * (toothW + teethGap);
+                const x = teethStartX + col * (toothW + teethGap);
                 const y = mouthY + teethPadding + row * (toothH + teethGap);
                 
                 ctx.beginPath();
