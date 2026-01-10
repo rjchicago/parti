@@ -41,11 +41,20 @@ export class FaceMask {
         }
         return this.colors[0];
     }
-
-    draw(ctx, landmarks, canvasSize) {
+    
+    draw(ctx, landmarks, canvasSize, options = {}) {
         if (!landmarks || landmarks.length === 0) return;
         
         const time = performance.now() * 0.001;
+        const isShivering = options.isShivering || false;
+        
+        // Override color to light blue when shivering
+        const savedColors = this.colors;
+        const savedUseRainbow = this.useRainbow;
+        if (isShivering) {
+            this.colors = ['#66AAFF']; // Light blue
+            this.useRainbow = false;
+        }
         
         // Find face features
         const leftEye = landmarks.find(lm => lm.feature === 'leftEye');
@@ -69,9 +78,13 @@ export class FaceMask {
             // Draw eyes with blinking
             this.drawEyes(ctx, leftEye, rightEye, time);
             
-            // Draw animated mouth
+            // Draw animated mouth (or teeth if shivering)
             if (upperLip && lowerLip && leftMouth && rightMouth) {
-                this.drawMouth(ctx, upperLip, lowerLip, leftMouth, rightMouth);
+                if (isShivering) {
+                    this.drawTeeth(ctx, upperLip, lowerLip, leftMouth, rightMouth, time);
+                } else {
+                    this.drawMouth(ctx, upperLip, lowerLip, leftMouth, rightMouth);
+                }
             }
         }
         
@@ -83,6 +96,12 @@ export class FaceMask {
         
         ctx.shadowBlur = 0;
         ctx.globalAlpha = 1;
+        
+        // Restore colors
+        if (isShivering) {
+            this.colors = savedColors;
+            this.useRainbow = savedUseRainbow;
+        }
     }
 
     drawEyes(ctx, leftEye, rightEye, time) {
@@ -144,6 +163,64 @@ export class FaceMask {
             rightMouth.x,
             rightMouth.y
         );
+        ctx.stroke();
+    }
+    
+    drawTeeth(ctx, upperLip, lowerLip, leftMouth, rightMouth, time) {
+        const mouthWidth = rightMouth.x - leftMouth.x;
+        const mouthCenterY = (upperLip.y + lowerLip.y) / 2;
+        
+        // Chattering effect - slight vertical oscillation
+        const chatter = Math.sin(time * 40) * 1.5;
+        
+        // Mouth dimensions
+        const mouthHeight = 36;
+        const mouthX = leftMouth.x - 8;
+        const mouthY = mouthCenterY - mouthHeight / 2 + chatter;
+        const mouthW = mouthWidth + 16;
+        const borderRadius = 10;
+        
+        // Draw dark outer mouth border
+        ctx.lineWidth = 4;
+        ctx.strokeStyle = this.getColor(performance.now() * 0.001);
+        ctx.beginPath();
+        ctx.roundRect(mouthX, mouthY, mouthW, mouthHeight, borderRadius);
+        ctx.stroke();
+        
+        // Teeth grid: 4 columns, 2 rows
+        const teethCols = 4;
+        const teethRows = 2;
+        const teethPadding = 6;
+        const teethGap = 3;
+        const teethAreaW = mouthW - teethPadding * 2;
+        const teethAreaH = mouthHeight - teethPadding * 2;
+        const toothW = (teethAreaW - teethGap * (teethCols - 1)) / teethCols;
+        const toothH = (teethAreaH - teethGap * (teethRows - 1)) / teethRows;
+        const toothRadius = 3;
+        
+        // Draw white filled teeth
+        ctx.fillStyle = 'rgba(255, 255, 255, 0.9)';
+        ctx.strokeStyle = 'rgba(255, 255, 255, 0.5)';
+        ctx.lineWidth = 1;
+        
+        for (let row = 0; row < teethRows; row++) {
+            for (let col = 0; col < teethCols; col++) {
+                const x = mouthX + teethPadding + col * (toothW + teethGap);
+                const y = mouthY + teethPadding + row * (toothH + teethGap);
+                
+                ctx.beginPath();
+                ctx.roundRect(x, y, toothW, toothH, toothRadius);
+                ctx.fill();
+                ctx.stroke();
+            }
+        }
+        
+        // Draw dividing line between upper and lower teeth
+        ctx.strokeStyle = this.getColor(performance.now() * 0.001);
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.moveTo(mouthX + teethPadding, mouthY + mouthHeight / 2);
+        ctx.lineTo(mouthX + mouthW - teethPadding, mouthY + mouthHeight / 2);
         ctx.stroke();
     }
 

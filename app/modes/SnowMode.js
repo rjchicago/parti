@@ -18,11 +18,13 @@ export class SnowMode extends Mode {
             useRainbow: false,
             colors: ['#ffffff']
         });
+        
     }
 
     updateParticle(particle, landmarks, canvasSize) {
         // Store landmarks for face mask
         this.landmarks = landmarks;
+        
         // Check if particle is near any landmark
         let nearLandmark = false;
         
@@ -79,9 +81,15 @@ export class SnowMode extends Mode {
     }
 
     onAfterRender(ctx, canvasSize, options = {}) {
-        // Draw face mask overlay
+        // Draw face mask with constant shiver effect
         if (options.maskVisible !== false) {
-            this.faceMask.draw(ctx, this.landmarks, canvasSize);
+            // Gentle shiver oscillation
+            const shiverOffset = Math.sin(performance.now() * 0.02) * 2;
+            
+            ctx.save();
+            ctx.translate(shiverOffset, 0);
+            this.faceMask.draw(ctx, this.landmarks, canvasSize, { isShivering: true });
+            ctx.restore();
         }
     }
 

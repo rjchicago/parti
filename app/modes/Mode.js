@@ -73,9 +73,10 @@ export class Mode {
     /**
      * Called before individual particle updates - for batch operations
      * @param {Array} particles - All particles
+     * @param {Array} landmarks - Current detected landmarks
      * @param {Object} canvasSize - { width, height }
      */
-    onBeforeUpdate(particles, canvasSize) {
+    onBeforeUpdate(particles, landmarks, canvasSize) {
         // Override in subclasses for custom batch behavior
     }
 

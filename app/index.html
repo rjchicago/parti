@@ -84,27 +84,10 @@
                 <span class="mode-icon">⚛️</span>
                 <span class="mode-label">Gravity</span>
             </button>
-            <div class="theme-selector">
-                <span class="theme-label">🎨 Theme:</span>
-                <select id="theme-select">
-                    <option value="0">Rainbow</option>
-                    <option value="1">Fire</option>
-                    <option value="2">Ocean</option>
-                    <option value="3">Galaxy</option>
-                    <option value="4">Matrix</option>
-                    <option value="5">White</option>
-                    <option value="6">Mercury</option>
-                </select>
-            </div>
-            <div class="fist-action-selector">
-                <span class="fist-label">✊ Fist:</span>
-                <select id="fist-action">
-                    <option value="mode">Toggle Mode</option>
-                    <option value="camera">Toggle Camera</option>
-                    <option value="theme">Cycle Theme</option>
-                    <option value="none" selected>None</option>
-                </select>
-            </div>
+            <button id="sketch-btn" class="mode-btn" data-mode="sketch">
+                <span class="mode-icon">✏️</span>
+                <span class="mode-label">Sketch</span>
+            </button>
         </div>
 
         <!-- Keyboard Shortcuts Panel (bottom right) -->
@@ -149,8 +132,44 @@
             <span id="active-particles">0</span> particles
         </div>
 
-        <!-- Reset Settings Link -->
-        <a href="#" id="reset-settings" class="reset-link">Reset Settings</a>
+        <!-- Settings Link -->
+        <a href="#" id="settings-link" class="settings-link">⚙️ Settings</a>
+    </div>
+    
+    <!-- Settings Modal -->
+    <div id="settings-modal" class="modal-overlay" style="display: none;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>⚙️ Settings</h2>
+                <button id="close-settings" class="modal-close">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="setting-row">
+                    <span class="setting-label">🎨 Theme</span>
+                    <select id="theme-select">
+                        <option value="0">Rainbow</option>
+                        <option value="1">Fire</option>
+                        <option value="2">Ocean</option>
+                        <option value="3">Galaxy</option>
+                        <option value="4">Matrix</option>
+                        <option value="5">White</option>
+                        <option value="6">Mercury</option>
+                    </select>
+                </div>
+                <div class="setting-row">
+                    <span class="setting-label">✊ Fist Action</span>
+                    <select id="fist-action">
+                        <option value="mode">Toggle Mode</option>
+                        <option value="camera">Toggle Camera</option>
+                        <option value="theme">Cycle Theme</option>
+                        <option value="none" selected>None</option>
+                    </select>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <a href="#" id="reset-settings" class="reset-link">Reset All Settings</a>
+            </div>
+        </div>
     </div>
 
     <!-- Scripts -->

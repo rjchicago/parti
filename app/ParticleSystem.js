@@ -1,4 +1,4 @@
-import { AttractMode, RepelMode, RainMode, SnowMode, PartyMode, GalacticMode, MatrixMode, GravityMode } from './modes/index.js';
+import { AttractMode, RepelMode, RainMode, SnowMode, PartyMode, GalacticMode, MatrixMode, GravityMode, SketchMode } from './modes/index.js';
 
 // Golden ratio for organic distribution
 const PHI = 1.618033988749895;
@@ -62,7 +62,8 @@ export class ParticleSystem {
             party: new PartyMode(),
             galactic: new GalacticMode(),
             matrix: new MatrixMode(),
-            gravity: new GravityMode()
+            gravity: new GravityMode(),
+            sketch: new SketchMode()
         };
         this.currentMode = this.modes.attract;
     }
@@ -226,7 +227,7 @@ export class ParticleSystem {
         const usesFriction = mode.usesFriction();
         
         // Call mode's before-update hook (for batch operations like bursts, shooting stars)
-        mode.onBeforeUpdate(this.particles, canvasSize);
+        mode.onBeforeUpdate(this.particles, this.landmarks, canvasSize);
         
         for (const particle of this.particles) {
             // Apply mode-specific physics
@@ -261,10 +262,21 @@ export class ParticleSystem {
         const ctx = this.ctx;
         const mode = this.currentMode;
         
-        // Clear with trail effect (mode-specific alpha)
+        // Clear with trail effect (mode-specific alpha and background color)
         const trailAlpha = mode.getTrailAlpha();
-        ctx.fillStyle = `rgba(5, 5, 8, ${1 - trailAlpha})`;
-        ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
+        const bgColor = mode.getBackgroundColor ? mode.getBackgroundColor() : null;
+        
+        if (bgColor) {
+            // White/light background - use solid clear for sketch mode
+            ctx.fillStyle = bgColor;
+            ctx.globalAlpha = 1 - trailAlpha * 0.3; // Faster fade on white
+            ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
+            ctx.globalAlpha = 1;
+        } else {
+            // Dark background (default)
+            ctx.fillStyle = `rgba(5, 5, 8, ${1 - trailAlpha})`;
+            ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
+        }
         
         // Render particles
         for (const particle of this.particles) {

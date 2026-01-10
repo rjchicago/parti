@@ -128,7 +128,7 @@ let state = {
 let introScreen, app, particleCanvas;
 let cameraFeed, overlayCanvas, overlayCtx;
 let statusIndicator, statusDot, statusText;
-let attractBtn, repelBtn, rainBtn, snowBtn, partyBtn, galacticBtn, matrixBtn, gravityBtn, themeSelect;
+let attractBtn, repelBtn, rainBtn, snowBtn, partyBtn, galacticBtn, matrixBtn, gravityBtn, sketchBtn, themeSelect;
 let particleCountEl, cameraPreviewContainer, fistActionSelect;
 
 // Core systems
@@ -157,6 +157,7 @@ function init() {
     galacticBtn = document.getElementById('galactic-btn');
     matrixBtn = document.getElementById('matrix-btn');
     gravityBtn = document.getElementById('gravity-btn');
+    sketchBtn = document.getElementById('sketch-btn');
     themeSelect = document.getElementById('theme-select');
     particleCountEl = document.getElementById('active-particles');
     cameraPreviewContainer = document.getElementById('camera-preview-container');
@@ -172,6 +173,7 @@ function init() {
     galacticBtn.addEventListener('click', () => setMode('galactic'));
     matrixBtn.addEventListener('click', () => setMode('matrix'));
     gravityBtn.addEventListener('click', () => setMode('gravity'));
+    sketchBtn.addEventListener('click', () => setMode('sketch'));
     themeSelect.addEventListener('change', (e) => setTheme(parseInt(e.target.value)));
     fistActionSelect.addEventListener('change', (e) => { 
         state.fistAction = e.target.value;
@@ -179,7 +181,30 @@ function init() {
     });
     
     
-    // Reset link
+    // Settings modal
+    const settingsLink = document.getElementById('settings-link');
+    const settingsModal = document.getElementById('settings-modal');
+    const closeSettings = document.getElementById('close-settings');
+    
+    if (settingsLink && settingsModal) {
+        settingsLink.addEventListener('click', (e) => {
+            e.preventDefault();
+            settingsModal.style.display = 'flex';
+        });
+        
+        closeSettings.addEventListener('click', () => {
+            settingsModal.style.display = 'none';
+        });
+        
+        // Close modal when clicking overlay
+        settingsModal.addEventListener('click', (e) => {
+            if (e.target === settingsModal) {
+                settingsModal.style.display = 'none';
+            }
+        });
+    }
+    
+    // Reset link (inside settings modal)
     const resetLink = document.getElementById('reset-settings');
     if (resetLink) {
         resetLink.addEventListener('click', (e) => {
@@ -660,6 +685,7 @@ function setMode(mode) {
     galacticBtn.classList.toggle('active', mode === 'galactic');
     matrixBtn.classList.toggle('active', mode === 'matrix');
     gravityBtn.classList.toggle('active', mode === 'gravity');
+    sketchBtn.classList.toggle('active', mode === 'sketch');
     
     saveSettings();
 }
@@ -669,14 +695,14 @@ function cycleMode() {
 }
 
 function cycleModeDown() {
-    const modes = ['party', 'attract', 'repel', 'rain', 'snow', 'galactic', 'matrix', 'gravity'];
+    const modes = ['party', 'attract', 'repel', 'rain', 'snow', 'galactic', 'matrix', 'gravity', 'sketch'];
     const currentIndex = modes.indexOf(state.mode);
     const nextMode = modes[(currentIndex + 1) % modes.length];
     setMode(nextMode);
 }
 
 function cycleModeUp() {
-    const modes = ['party', 'attract', 'repel', 'rain', 'snow', 'galactic', 'matrix', 'gravity'];
+    const modes = ['party', 'attract', 'repel', 'rain', 'snow', 'galactic', 'matrix', 'gravity', 'sketch'];
     const currentIndex = modes.indexOf(state.mode);
     const prevMode = modes[(currentIndex - 1 + modes.length) % modes.length];
     setMode(prevMode);
@@ -719,19 +745,13 @@ function toggleLayout() {
 
 function applyLayout() {
     const shortcutsPanel = document.getElementById('shortcuts-panel');
-    const themeSelector = document.querySelector('.theme-selector');
-    const fistSelector = document.querySelector('.fist-action-selector');
     
     if (state.mobileLayout) {
-        // Mobile layout - hide keyboard shortcuts and selectors, show toggle button
+        // Mobile layout - hide keyboard shortcuts
         if (shortcutsPanel) shortcutsPanel.style.display = 'none';
-        if (themeSelector) themeSelector.style.display = 'none';
-        if (fistSelector) fistSelector.style.display = 'none';
     } else {
         // Desktop layout - show all
         if (shortcutsPanel) shortcutsPanel.style.display = '';
-        if (themeSelector) themeSelector.style.display = '';
-        if (fistSelector) fistSelector.style.display = '';
     }
 }
 
