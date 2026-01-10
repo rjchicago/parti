@@ -1,6 +1,6 @@
 services:
   parti:
-    image: nginx:alpine
+    image: rjchicago/parti:${VERSION:-latest}
     container_name: parti
     ports:
       - "8080:80"

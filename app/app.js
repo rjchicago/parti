@@ -697,6 +697,11 @@ function returnToIntro() {
     introScreen.classList.remove('hidden');
     app.classList.add('hidden');
     
+    // Reset the button so user can try again
+    const btn = document.getElementById('enable-camera-btn');
+    btn.innerHTML = '<span class="btn-icon">📷</span><span class="btn-text">Enable Camera</span>';
+    btn.disabled = false;
+    
     updateStatus('Camera disconnected', 'error');
 }
 
