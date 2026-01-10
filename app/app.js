@@ -181,6 +181,9 @@ function init() {
     // Canvas resize
     window.addEventListener('resize', resizeCanvas);
     resizeCanvas();
+    
+    // Detect wake from sleep - check if camera is still valid
+    document.addEventListener('visibilitychange', handleVisibilityChange);
 
     // Create intro particles
     createIntroParticles();
@@ -659,6 +662,36 @@ function toggleCamera() {
 function togglePause() {
     state.paused = !state.paused;
     updateStatus(state.paused ? 'Paused' : 'Tracking', state.paused ? 'warning' : 'active');
+}
+
+function handleVisibilityChange() {
+    if (document.visibilityState === 'visible' && state.isRunning) {
+        // Check if camera stream is still active
+        const videoTracks = cameraFeed.srcObject?.getVideoTracks() || [];
+        const hasActiveTrack = videoTracks.some(track => track.readyState === 'live');
+        
+        if (!hasActiveTrack) {
+            // Camera lost - return to intro screen
+            returnToIntro();
+        }
+    }
+}
+
+function returnToIntro() {
+    // Stop everything
+    state.isRunning = false;
+    
+    // Stop camera
+    if (cameraFeed.srcObject) {
+        cameraFeed.srcObject.getTracks().forEach(track => track.stop());
+        cameraFeed.srcObject = null;
+    }
+    
+    // Show intro, hide app
+    introScreen.classList.remove('hidden');
+    app.classList.add('hidden');
+    
+    updateStatus('Camera disconnected', 'error');
 }
 
 function updateStatus(text, statusClass) {
