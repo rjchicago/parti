@@ -412,11 +412,6 @@ function processLandmarks() {
     const LEFT_MOUTH_CORNER = 61;
     const RIGHT_MOUTH_CORNER = 291;
     
-    // Eyelid landmarks for blink detection
-    const LEFT_EYE_TOP = 159;
-    const LEFT_EYE_BOTTOM = 145;
-    const RIGHT_EYE_TOP = 386;
-    const RIGHT_EYE_BOTTOM = 374;
     
     if (state.faceResults?.multiFaceLandmarks) {
         for (const faceLandmarks of state.faceResults.multiFaceLandmarks) {
@@ -437,10 +432,6 @@ function processLandmarks() {
                 let feature = null;
                 if (i === LEFT_EYE_CENTER) feature = 'leftEye';
                 else if (i === RIGHT_EYE_CENTER) feature = 'rightEye';
-                else if (i === LEFT_EYE_TOP) feature = 'leftEyeTop';
-                else if (i === LEFT_EYE_BOTTOM) feature = 'leftEyeBottom';
-                else if (i === RIGHT_EYE_TOP) feature = 'rightEyeTop';
-                else if (i === RIGHT_EYE_BOTTOM) feature = 'rightEyeBottom';
                 else if (i === UPPER_LIP_CENTER) feature = 'upperLip';
                 else if (i === LOWER_LIP_CENTER) feature = 'lowerLip';
                 else if (i === LEFT_MOUTH_CORNER) feature = 'leftMouth';
