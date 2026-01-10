@@ -178,6 +178,7 @@ function init() {
         saveSettings();
     });
     
+    
     // Reset link
     const resetLink = document.getElementById('reset-settings');
     if (resetLink) {
@@ -217,7 +218,7 @@ function init() {
     if (layoutIndicator) {
         layoutIndicator.textContent = `Layout: ${state.mobileLayout ? 'Mobile' : 'Desktop'}`;
     }
-
+    
     // Create intro particles
     createIntroParticles();
 }
@@ -722,7 +723,7 @@ function applyLayout() {
     const fistSelector = document.querySelector('.fist-action-selector');
     
     if (state.mobileLayout) {
-        // Mobile layout - hide keyboard shortcuts and selectors
+        // Mobile layout - hide keyboard shortcuts and selectors, show toggle button
         if (shortcutsPanel) shortcutsPanel.style.display = 'none';
         if (themeSelector) themeSelector.style.display = 'none';
         if (fistSelector) fistSelector.style.display = 'none';
@@ -800,7 +801,7 @@ function handleKeyboard(e) {
         case 'KeyM':
             toggleMask();
             break;
-        case 'KeyL':
+        case 'KeyD':
             toggleLayout();
             break;
         case 'ArrowUp':

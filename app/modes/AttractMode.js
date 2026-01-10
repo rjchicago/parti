@@ -13,10 +13,10 @@ export class AttractMode extends Mode {
         this.buzzThreshold = 75;  // Distance at which buzzing starts
         this.landmarks = [];
         
-        // Face mask with Matrix green
+        // Face mask with red
         this.faceMask = new FaceMask({ 
             useRainbow: false,
-            colors: ['#00ff00']
+            colors: ['#ff3333']
         });
     }
 
@@ -57,7 +57,7 @@ export class AttractMode extends Mode {
     }
 
     getPresetTheme() {
-        return 4; // Matrix
+        return 6; // Mercury
     }
 
     onAfterRender(ctx, canvasSize, options = {}) {

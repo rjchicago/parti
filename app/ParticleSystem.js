@@ -25,6 +25,9 @@ export const THEMES = {
     },
     White: {
         colors: ['#ffffff', '#f0f0f0', '#e8e8e8', '#d8d8d8', '#c8c8c8']
+    },
+    Mercury: {
+        colors: ['#4a4a4a', '#5c5c5c', '#3d3d3d', '#6e6e6e', '#2f2f2f', '#505050']
     }
 };
 
