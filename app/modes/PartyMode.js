@@ -20,6 +20,16 @@ export class PartyMode extends Mode {
         
         // Rainbow colors for edge glow
         this.rainbowColors = ['#ff0000', '#ff7f00', '#ffff00', '#00ff00', '#0000ff', '#4b0082', '#9400d3'];
+        
+        // Hand skeleton connections
+        this.handConnections = [
+            [0, 1], [1, 2], [2, 3], [3, 4],      // Thumb
+            [0, 5], [5, 6], [6, 7], [7, 8],      // Index
+            [0, 9], [9, 10], [10, 11], [11, 12], // Middle
+            [0, 13], [13, 14], [14, 15], [15, 16], // Ring
+            [0, 17], [17, 18], [18, 19], [19, 20], // Pinky
+            [5, 9], [9, 13], [13, 17]            // Palm
+        ];
     }
 
     updateParticle(particle, landmarks, canvasSize) {
@@ -205,24 +215,61 @@ export class PartyMode extends Mode {
             }
         }
         
-        // Draw hand outlines (keep the glow for hands)
-        const handEdge = this.landmarks.filter(lm => lm.type === 'hand' && lm.isEdge);
-        if (handEdge.length > 2) {
-            const colorIndex = Math.floor((time * 2 + 3) % this.rainbowColors.length);
-            const color = this.rainbowColors[colorIndex];
-            
-            ctx.lineWidth = 2;
-            ctx.strokeStyle = color;
-            ctx.shadowColor = color;
-            ctx.shadowBlur = 30;
-            ctx.globalAlpha = 0.25;
-            
-            ctx.beginPath();
-            ctx.moveTo(handEdge[0].x, handEdge[0].y);
-            for (let i = 1; i < handEdge.length; i++) {
-                ctx.lineTo(handEdge[i].x, handEdge[i].y);
+        // Draw skeleton hands
+        const handLandmarks = this.landmarks.filter(lm => lm.type === 'hand');
+        if (handLandmarks.length > 0) {
+            // Group by handId
+            const hands = {};
+            for (const lm of handLandmarks) {
+                if (!hands[lm.handId]) hands[lm.handId] = {};
+                hands[lm.handId][lm.index] = lm;
             }
-            ctx.stroke();
+            
+            ctx.lineWidth = 3;
+            ctx.lineCap = 'round';
+            ctx.shadowBlur = 30;
+            ctx.globalAlpha = 0.35;
+            
+            // Draw each hand's skeleton
+            for (const handId in hands) {
+                const hand = hands[handId];
+                
+                for (const [startIdx, endIdx] of this.handConnections) {
+                    const start = hand[startIdx];
+                    const end = hand[endIdx];
+                    
+                    if (start && end) {
+                        // Rainbow color based on connection
+                        const colorIndex = Math.floor((time * 2 + startIdx * 0.3) % this.rainbowColors.length);
+                        const color = this.rainbowColors[colorIndex];
+                        
+                        ctx.strokeStyle = color;
+                        ctx.shadowColor = color;
+                        
+                        ctx.beginPath();
+                        ctx.moveTo(start.x, start.y);
+                        ctx.lineTo(end.x, end.y);
+                        ctx.stroke();
+                    }
+                }
+                
+                // Draw joints as dots
+                for (const idx in hand) {
+                    const lm = hand[idx];
+                    const colorIndex = Math.floor((time * 2 + parseInt(idx) * 0.5) % this.rainbowColors.length);
+                    const color = this.rainbowColors[colorIndex];
+                    
+                    ctx.fillStyle = color;
+                    ctx.shadowColor = color;
+                    
+                    // Larger dots for fingertips and wrist
+                    const radius = [0, 4, 8, 12, 16, 20].includes(parseInt(idx)) ? 6 : 4;
+                    
+                    ctx.beginPath();
+                    ctx.arc(lm.x, lm.y, radius, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+            }
         }
         
         ctx.shadowBlur = 0;

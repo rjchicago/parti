@@ -366,6 +366,7 @@ function processLandmarks() {
     const HAND_EDGE_INDICES = [0, 4, 8, 12, 16, 20];
     
     if (state.handResults?.multiHandLandmarks) {
+        let handId = 0;
         for (const handLandmarks of state.handResults.multiHandLandmarks) {
             for (let i = 0; i < handLandmarks.length; i++) {
                 const lm = handLandmarks[i];
@@ -385,9 +386,12 @@ function processLandmarks() {
                     spread: spread,
                     weight: CONFIG.hand.landmarkWeight,
                     type: 'hand',
-                    isEdge: HAND_EDGE_INDICES.includes(i)
+                    isEdge: HAND_EDGE_INDICES.includes(i),
+                    index: i,
+                    handId: handId
                 });
             }
+            handId++;
         }
     }
 
