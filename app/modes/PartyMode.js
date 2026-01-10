@@ -21,6 +21,11 @@ export class PartyMode extends Mode {
         // Rainbow colors for edge glow
         this.rainbowColors = ['#ff0000', '#ff7f00', '#ffff00', '#00ff00', '#0000ff', '#4b0082', '#9400d3'];
         
+        // Random blink timing
+        this.lastBlinkTime = 0;
+        this.blinkDuration = 150; // ms eyes stay closed
+        this.nextBlinkTime = 2000; // first blink after 2s
+        
         // Hand skeleton connections
         this.handConnections = [
             [0, 1], [1, 2], [2, 3], [3, 4],      // Thumb
@@ -170,18 +175,41 @@ export class PartyMode extends Mode {
             ctx.shadowColor = color;
             ctx.shadowBlur = 30;
             
-            // Draw eye dots
+            // Random blink timing
+            const now = performance.now();
+            if (now > this.nextBlinkTime) {
+                this.lastBlinkTime = now;
+                this.nextBlinkTime = now + 2500 + Math.random() * 3000; // 2.5-5.5s
+            }
+            const isBlinking = (now - this.lastBlinkTime) < this.blinkDuration;
+            
+            // Draw eyes
             const eyeRadius = 12;
             
-            // Left eye
-            ctx.beginPath();
-            ctx.arc(leftEye.x, leftEye.y, eyeRadius, 0, Math.PI * 2);
-            ctx.fill();
-            
-            // Right eye
-            ctx.beginPath();
-            ctx.arc(rightEye.x, rightEye.y, eyeRadius, 0, Math.PI * 2);
-            ctx.fill();
+            if (isBlinking) {
+                // Closed eyes - horizontal lines
+                ctx.lineWidth = 4;
+                ctx.lineCap = 'round';
+                
+                ctx.beginPath();
+                ctx.moveTo(leftEye.x - eyeRadius, leftEye.y);
+                ctx.lineTo(leftEye.x + eyeRadius, leftEye.y);
+                ctx.stroke();
+                
+                ctx.beginPath();
+                ctx.moveTo(rightEye.x - eyeRadius, rightEye.y);
+                ctx.lineTo(rightEye.x + eyeRadius, rightEye.y);
+                ctx.stroke();
+            } else {
+                // Open eyes - circles
+                ctx.beginPath();
+                ctx.arc(leftEye.x, leftEye.y, eyeRadius, 0, Math.PI * 2);
+                ctx.fill();
+                
+                ctx.beginPath();
+                ctx.arc(rightEye.x, rightEye.y, eyeRadius, 0, Math.PI * 2);
+                ctx.fill();
+            }
             
             // Draw animated mouth with two curves
             if (upperLip && lowerLip && leftMouth && rightMouth) {
@@ -213,6 +241,33 @@ export class PartyMode extends Mode {
                 );
                 ctx.stroke();
             }
+        }
+        
+        // Draw face outline (oval) - sorted by faceOvalOrder for smooth tracing
+        const faceOval = this.landmarks
+            .filter(lm => lm.type === 'face' && lm.isEdge && lm.faceOvalOrder >= 0)
+            .sort((a, b) => a.faceOvalOrder - b.faceOvalOrder);
+        if (faceOval.length > 5) {
+            ctx.lineWidth = 3;
+            ctx.lineCap = 'round';
+            ctx.lineJoin = 'round';
+            ctx.shadowBlur = 30;
+            ctx.globalAlpha = 0.3;
+            
+            // Rainbow color cycling
+            const colorIndex = Math.floor((time * 2 + 1) % this.rainbowColors.length);
+            const color = this.rainbowColors[colorIndex];
+            
+            ctx.strokeStyle = color;
+            ctx.shadowColor = color;
+            
+            ctx.beginPath();
+            ctx.moveTo(faceOval[0].x, faceOval[0].y);
+            for (let i = 1; i < faceOval.length; i++) {
+                ctx.lineTo(faceOval[i].x, faceOval[i].y);
+            }
+            ctx.closePath();
+            ctx.stroke();
         }
         
         // Draw skeleton hands
