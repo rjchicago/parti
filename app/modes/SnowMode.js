@@ -78,9 +78,11 @@ export class SnowMode extends Mode {
         return 0.08;
     }
 
-    onAfterRender(ctx, canvasSize) {
+    onAfterRender(ctx, canvasSize, options = {}) {
         // Draw face mask overlay
-        this.faceMask.draw(ctx, this.landmarks, canvasSize);
+        if (options.maskVisible !== false) {
+            this.faceMask.draw(ctx, this.landmarks, canvasSize);
+        }
     }
 
     handleEdges(particle, canvasSize) {

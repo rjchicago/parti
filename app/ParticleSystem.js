@@ -48,6 +48,7 @@ export class ParticleSystem {
         this.particles = [];
         this.currentTheme = 0;
         this.landmarks = [];
+        this.maskVisible = true;
         
         // Initialize modes
         this.modes = {
@@ -153,6 +154,13 @@ export class ParticleSystem {
         const newTheme = (this.currentTheme + 1) % THEME_NAMES.length;
         this.setTheme(newTheme);
         return newTheme;
+    }
+
+    /**
+     * Set mask visibility
+     */
+    setMaskVisible(visible) {
+        this.maskVisible = visible;
     }
 
     /**
@@ -265,7 +273,7 @@ export class ParticleSystem {
         
         // Call mode's after-render hook (for overlays like shooting stars)
         const canvasSize = { width: this.canvas.width, height: this.canvas.height };
-        mode.onAfterRender(ctx, canvasSize);
+        mode.onAfterRender(ctx, canvasSize, { maskVisible: this.maskVisible });
         
         ctx.globalAlpha = 1;
     }

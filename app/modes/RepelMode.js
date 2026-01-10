@@ -1,4 +1,5 @@
 import { Mode } from './Mode.js';
+import { FaceMask } from './FaceMask.js';
 
 /**
  * Repel mode: particles flow freely but avoid landmarks
@@ -8,9 +9,18 @@ export class RepelMode extends Mode {
         super('repel', '💨');
         this.repelDistance = 120;
         this.repelStrength = 0.15;
+        this.landmarks = [];
+        
+        // Face mask with Fire orange
+        this.faceMask = new FaceMask({ 
+            useRainbow: false,
+            colors: ['#ff6600']
+        });
     }
 
     updateParticle(particle, landmarks, canvasSize) {
+        // Store landmarks for face mask
+        this.landmarks = landmarks;
         const time = performance.now() * 0.001;
 
         // Continuous flowing movement using sine waves for organic motion
@@ -49,5 +59,12 @@ export class RepelMode extends Mode {
 
     getPresetTheme() {
         return 1; // Fire
+    }
+
+    onAfterRender(ctx, canvasSize, options = {}) {
+        // Draw face mask overlay
+        if (options.maskVisible !== false) {
+            this.faceMask.draw(ctx, this.landmarks, canvasSize);
+        }
     }
 }

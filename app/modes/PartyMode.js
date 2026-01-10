@@ -135,9 +135,11 @@ export class PartyMode extends Mode {
         return particle.alpha;
     }
 
-    onAfterRender(ctx, canvasSize) {
+    onAfterRender(ctx, canvasSize, options = {}) {
         // Draw face mask overlay using shared utility
-        this.faceMask.draw(ctx, this.landmarks, canvasSize);
+        if (options.maskVisible !== false) {
+            this.faceMask.draw(ctx, this.landmarks, canvasSize);
+        }
     }
 
     handleEdges(particle, canvasSize) {

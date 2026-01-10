@@ -1,4 +1,5 @@
 import { Mode } from './Mode.js';
+import { FaceMask } from './FaceMask.js';
 
 export class GalacticMode extends Mode {
     constructor() {
@@ -18,6 +19,14 @@ export class GalacticMode extends Mode {
         this.bandAngle = -0.3; // Slight diagonal tilt (radians)
         this.bandWidth = 0.35; // Width of the main band (fraction of screen height)
         this.coreIntensity = 0.7; // How concentrated the core is
+        
+        this.landmarks = [];
+        
+        // Face mask with Galaxy purple
+        this.faceMask = new FaceMask({ 
+            useRainbow: false,
+            colors: ['#9933ff']
+        });
     }
 
     initParticle(particle, canvasSize) {
@@ -79,6 +88,9 @@ export class GalacticMode extends Mode {
     }
 
     updateParticle(particle, landmarks, canvasSize) {
+        // Store landmarks for face mask
+        this.landmarks = landmarks;
+        
         // Check for hand proximity - stars twinkle brighter when hands pass over
         particle.handTwinkle = 0;
         for (const lm of landmarks) {
@@ -153,7 +165,7 @@ export class GalacticMode extends Mode {
         }
     }
 
-    onAfterRender(ctx, canvasSize) {
+    onAfterRender(ctx, canvasSize, options = {}) {
         // Render shooting stars
         for (const star of this.shootingStars) {
             // Draw trail
@@ -175,6 +187,11 @@ export class GalacticMode extends Mode {
             ctx.fillStyle = `rgba(255, 255, 255, ${star.life})`;
             ctx.globalAlpha = 1;
             ctx.fill();
+        }
+        
+        // Draw face mask overlay
+        if (options.maskVisible !== false) {
+            this.faceMask.draw(ctx, this.landmarks, canvasSize);
         }
     }
 

@@ -1,4 +1,5 @@
 import { Mode } from './Mode.js';
+import { FaceMask } from './FaceMask.js';
 
 /**
  * Attract mode: particles flow toward hand and face landmarks
@@ -8,9 +9,18 @@ export class AttractMode extends Mode {
         super('attract', '🧲');
         this.attraction = 0.08;
         this.returnSpeed = 0.02;
+        this.landmarks = [];
+        
+        // Face mask with Matrix green
+        this.faceMask = new FaceMask({ 
+            useRainbow: false,
+            colors: ['#00ff00']
+        });
     }
 
     updateParticle(particle, landmarks, canvasSize) {
+        // Store landmarks for face mask
+        this.landmarks = landmarks;
         if (particle.targetX !== null) {
             // Pull toward assigned landmark target
             const dx = particle.targetX - particle.x;
@@ -39,5 +49,12 @@ export class AttractMode extends Mode {
 
     getPresetTheme() {
         return 4; // Matrix
+    }
+
+    onAfterRender(ctx, canvasSize, options = {}) {
+        // Draw face mask overlay
+        if (options.maskVisible !== false) {
+            this.faceMask.draw(ctx, this.landmarks, canvasSize);
+        }
     }
 }

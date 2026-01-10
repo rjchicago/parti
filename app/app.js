@@ -55,7 +55,8 @@ const DEFAULT_SETTINGS = {
     theme: 0,
     particleCount: 5000,
     fistAction: 'none',
-    cameraVisible: true
+    cameraVisible: true,
+    maskVisible: true
 };
 
 function loadSettings() {
@@ -77,7 +78,8 @@ function saveSettings() {
             theme: particleSystem?.currentTheme ?? 0,
             particleCount: particleSystem?.getCount() ?? DEFAULT_SETTINGS.particleCount,
             fistAction: state.fistAction,
-            cameraVisible: state.cameraVisible
+            cameraVisible: state.cameraVisible,
+            maskVisible: state.maskVisible
         };
         localStorage.setItem(STORAGE_KEY, JSON.stringify(settings));
     } catch (e) {
@@ -94,6 +96,7 @@ function resetSettings() {
 let state = {
     mode: 'party',
     cameraVisible: true,
+    maskVisible: true,
     isRunning: false,
     paused: false,
     handResults: null,
@@ -169,6 +172,7 @@ function init() {
     state.mode = savedSettings.mode;
     state.fistAction = savedSettings.fistAction;
     state.cameraVisible = savedSettings.cameraVisible;
+    state.maskVisible = savedSettings.maskVisible;
     
     // Update dropdowns to match saved settings
     themeSelect.value = savedSettings.theme;
@@ -249,6 +253,7 @@ async function startApp() {
         particleSystem.init();
         particleSystem.setTheme(savedSettings.theme);
         particleSystem.setMode(savedSettings.mode);
+        particleSystem.setMaskVisible(savedSettings.maskVisible);
         
         // Apply saved mode to UI
         setMode(savedSettings.mode);
@@ -655,6 +660,14 @@ function togglePause() {
     updateStatus(state.paused ? 'Paused' : 'Tracking', state.paused ? 'warning' : 'active');
 }
 
+function toggleMask() {
+    state.maskVisible = !state.maskVisible;
+    if (particleSystem) {
+        particleSystem.setMaskVisible(state.maskVisible);
+    }
+    saveSettings();
+}
+
 function handleVisibilityChange() {
     if (document.visibilityState === 'visible' && state.isRunning) {
         // Check if camera stream is still active
@@ -712,6 +725,9 @@ function handleKeyboard(e) {
             break;
         case 'KeyP':
             togglePause();
+            break;
+        case 'KeyM':
+            toggleMask();
             break;
         case 'ArrowUp':
             e.preventDefault();

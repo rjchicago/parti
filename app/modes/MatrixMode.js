@@ -94,7 +94,7 @@ export class MatrixMode extends Mode {
         }
     }
 
-    onAfterRender(ctx, canvasSize) {
+    onAfterRender(ctx, canvasSize, options = {}) {
         // Draw all streams
         ctx.font = `${this.charHeight - 2}px "MS Gothic", "Hiragino Kaku Gothic Pro", monospace`;
         ctx.textAlign = 'center';
@@ -129,7 +129,9 @@ export class MatrixMode extends Mode {
         ctx.globalAlpha = 1;
         
         // Draw face mask overlay
-        this.faceMask.draw(ctx, this.landmarks, canvasSize);
+        if (options.maskVisible !== false) {
+            this.faceMask.draw(ctx, this.landmarks, canvasSize);
+        }
     }
 
     // Override to not render regular particles

@@ -82,9 +82,11 @@ export class RainMode extends Mode {
         return false;  // Rain handles its own damping
     }
 
-    onAfterRender(ctx, canvasSize) {
+    onAfterRender(ctx, canvasSize, options = {}) {
         // Draw face mask overlay
-        this.faceMask.draw(ctx, this.landmarks, canvasSize);
+        if (options.maskVisible !== false) {
+            this.faceMask.draw(ctx, this.landmarks, canvasSize);
+        }
     }
 
     handleEdges(particle, canvasSize) {

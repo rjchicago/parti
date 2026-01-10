@@ -83,8 +83,9 @@ export class Mode {
      * Called after particle rendering - for custom overlays
      * @param {CanvasRenderingContext2D} ctx - Canvas context
      * @param {Object} canvasSize - { width, height }
+     * @param {Object} options - { maskVisible: boolean }
      */
-    onAfterRender(ctx, canvasSize) {
+    onAfterRender(ctx, canvasSize, options = {}) {
         // Override in subclasses for custom rendering
     }
 
