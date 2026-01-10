@@ -1,4 +1,5 @@
 import { Mode } from './Mode.js';
+import { FaceMask } from './FaceMask.js';
 
 export class PartyMode extends Mode {
     constructor() {
@@ -18,23 +19,8 @@ export class PartyMode extends Mode {
         this.silhouetteRadius = 40; // How close to landmark to hide
         this.landmarks = []; // Store for glow rendering
         
-        // Rainbow colors for edge glow
-        this.rainbowColors = ['#ff0000', '#ff7f00', '#ffff00', '#00ff00', '#0000ff', '#4b0082', '#9400d3'];
-        
-        // Random blink timing
-        this.lastBlinkTime = 0;
-        this.blinkDuration = 150; // ms eyes stay closed
-        this.nextBlinkTime = 2000; // first blink after 2s
-        
-        // Hand skeleton connections
-        this.handConnections = [
-            [0, 1], [1, 2], [2, 3], [3, 4],      // Thumb
-            [0, 5], [5, 6], [6, 7], [7, 8],      // Index
-            [0, 9], [9, 10], [10, 11], [11, 12], // Middle
-            [0, 13], [13, 14], [14, 15], [15, 16], // Ring
-            [0, 17], [17, 18], [18, 19], [19, 20], // Pinky
-            [5, 9], [9, 13], [13, 17]            // Palm
-        ];
+        // Face mask overlay
+        this.faceMask = new FaceMask({ useRainbow: true });
     }
 
     updateParticle(particle, landmarks, canvasSize) {
@@ -150,185 +136,8 @@ export class PartyMode extends Mode {
     }
 
     onAfterRender(ctx, canvasSize) {
-        if (!this.landmarks || this.landmarks.length === 0) return;
-        
-        const time = performance.now() * 0.001;
-        
-        // Find face features for happy face mask
-        const leftEye = this.landmarks.find(lm => lm.feature === 'leftEye');
-        const rightEye = this.landmarks.find(lm => lm.feature === 'rightEye');
-        const upperLip = this.landmarks.find(lm => lm.feature === 'upperLip');
-        const lowerLip = this.landmarks.find(lm => lm.feature === 'lowerLip');
-        const leftMouth = this.landmarks.find(lm => lm.feature === 'leftMouth');
-        const rightMouth = this.landmarks.find(lm => lm.feature === 'rightMouth');
-        
-        ctx.globalAlpha = 0.4;
-        
-        // Draw happy face if we have face detected
-        if (leftEye && rightEye) {
-            // Rainbow color cycling
-            const colorIndex = Math.floor((time * 2) % this.rainbowColors.length);
-            const color = this.rainbowColors[colorIndex];
-            
-            ctx.fillStyle = color;
-            ctx.strokeStyle = color;
-            ctx.shadowColor = color;
-            ctx.shadowBlur = 30;
-            
-            // Random blink timing
-            const now = performance.now();
-            if (now > this.nextBlinkTime) {
-                this.lastBlinkTime = now;
-                this.nextBlinkTime = now + 2500 + Math.random() * 3000; // 2.5-5.5s
-            }
-            const isBlinking = (now - this.lastBlinkTime) < this.blinkDuration;
-            
-            // Draw eyes
-            const eyeRadius = 12;
-            
-            if (isBlinking) {
-                // Closed eyes - horizontal lines
-                ctx.lineWidth = 4;
-                ctx.lineCap = 'round';
-                
-                ctx.beginPath();
-                ctx.moveTo(leftEye.x - eyeRadius, leftEye.y);
-                ctx.lineTo(leftEye.x + eyeRadius, leftEye.y);
-                ctx.stroke();
-                
-                ctx.beginPath();
-                ctx.moveTo(rightEye.x - eyeRadius, rightEye.y);
-                ctx.lineTo(rightEye.x + eyeRadius, rightEye.y);
-                ctx.stroke();
-            } else {
-                // Open eyes - circles
-                ctx.beginPath();
-                ctx.arc(leftEye.x, leftEye.y, eyeRadius, 0, Math.PI * 2);
-                ctx.fill();
-                
-                ctx.beginPath();
-                ctx.arc(rightEye.x, rightEye.y, eyeRadius, 0, Math.PI * 2);
-                ctx.fill();
-            }
-            
-            // Draw animated mouth with two curves
-            if (upperLip && lowerLip && leftMouth && rightMouth) {
-                const mouthWidth = Math.abs(rightMouth.x - leftMouth.x);
-                const mouthOpen = Math.abs(lowerLip.y - upperLip.y);
-                
-                ctx.lineWidth = 4;
-                ctx.lineCap = 'round';
-                
-                // Upper lip curve (smile curve going up at corners)
-                ctx.beginPath();
-                ctx.moveTo(leftMouth.x, leftMouth.y);
-                ctx.quadraticCurveTo(
-                    (leftMouth.x + rightMouth.x) / 2,
-                    upperLip.y - mouthOpen * 0.3, // Curve upward for smile
-                    rightMouth.x,
-                    rightMouth.y
-                );
-                ctx.stroke();
-                
-                // Lower lip curve (tracks actual mouth opening)
-                ctx.beginPath();
-                ctx.moveTo(leftMouth.x, leftMouth.y);
-                ctx.quadraticCurveTo(
-                    (leftMouth.x + rightMouth.x) / 2,
-                    lowerLip.y + mouthOpen * 0.2, // Follows lower lip
-                    rightMouth.x,
-                    rightMouth.y
-                );
-                ctx.stroke();
-            }
-        }
-        
-        // Draw face outline (oval) - sorted by faceOvalOrder for smooth tracing
-        const faceOval = this.landmarks
-            .filter(lm => lm.type === 'face' && lm.isEdge && lm.faceOvalOrder >= 0)
-            .sort((a, b) => a.faceOvalOrder - b.faceOvalOrder);
-        if (faceOval.length > 5) {
-            ctx.lineWidth = 3;
-            ctx.lineCap = 'round';
-            ctx.lineJoin = 'round';
-            ctx.shadowBlur = 30;
-            ctx.globalAlpha = 0.3;
-            
-            // Rainbow color cycling
-            const colorIndex = Math.floor((time * 2 + 1) % this.rainbowColors.length);
-            const color = this.rainbowColors[colorIndex];
-            
-            ctx.strokeStyle = color;
-            ctx.shadowColor = color;
-            
-            ctx.beginPath();
-            ctx.moveTo(faceOval[0].x, faceOval[0].y);
-            for (let i = 1; i < faceOval.length; i++) {
-                ctx.lineTo(faceOval[i].x, faceOval[i].y);
-            }
-            ctx.closePath();
-            ctx.stroke();
-        }
-        
-        // Draw skeleton hands
-        const handLandmarks = this.landmarks.filter(lm => lm.type === 'hand');
-        if (handLandmarks.length > 0) {
-            // Group by handId
-            const hands = {};
-            for (const lm of handLandmarks) {
-                if (!hands[lm.handId]) hands[lm.handId] = {};
-                hands[lm.handId][lm.index] = lm;
-            }
-            
-            ctx.lineWidth = 3;
-            ctx.lineCap = 'round';
-            ctx.shadowBlur = 30;
-            ctx.globalAlpha = 0.35;
-            
-            // Draw each hand's skeleton
-            for (const handId in hands) {
-                const hand = hands[handId];
-                
-                for (const [startIdx, endIdx] of this.handConnections) {
-                    const start = hand[startIdx];
-                    const end = hand[endIdx];
-                    
-                    if (start && end) {
-                        // Rainbow color based on connection
-                        const colorIndex = Math.floor((time * 2 + startIdx * 0.3) % this.rainbowColors.length);
-                        const color = this.rainbowColors[colorIndex];
-                        
-                        ctx.strokeStyle = color;
-                        ctx.shadowColor = color;
-                        
-                        ctx.beginPath();
-                        ctx.moveTo(start.x, start.y);
-                        ctx.lineTo(end.x, end.y);
-                        ctx.stroke();
-                    }
-                }
-                
-                // Draw joints as dots
-                for (const idx in hand) {
-                    const lm = hand[idx];
-                    const colorIndex = Math.floor((time * 2 + parseInt(idx) * 0.5) % this.rainbowColors.length);
-                    const color = this.rainbowColors[colorIndex];
-                    
-                    ctx.fillStyle = color;
-                    ctx.shadowColor = color;
-                    
-                    // Larger dots for fingertips and wrist
-                    const radius = [0, 4, 8, 12, 16, 20].includes(parseInt(idx)) ? 6 : 4;
-                    
-                    ctx.beginPath();
-                    ctx.arc(lm.x, lm.y, radius, 0, Math.PI * 2);
-                    ctx.fill();
-                }
-            }
-        }
-        
-        ctx.shadowBlur = 0;
-        ctx.globalAlpha = 1;
+        // Draw face mask overlay using shared utility
+        this.faceMask.draw(ctx, this.landmarks, canvasSize);
     }
 
     handleEdges(particle, canvasSize) {

@@ -1,4 +1,5 @@
 import { Mode } from './Mode.js';
+import { FaceMask } from './FaceMask.js';
 
 /**
  * Rain mode: particles fall from top, slow and drip when hitting landmarks
@@ -10,6 +11,13 @@ export class RainMode extends Mode {
         this.terminalVelocity = 8;
         this.dripSpeed = 0.5;
         this.collisionRadius = 80;
+        this.landmarks = [];
+        
+        // Face mask with ocean blue color
+        this.faceMask = new FaceMask({ 
+            useRainbow: false,
+            colors: ['#00ccff']
+        });
     }
 
     // Rain needs higher max speed to feel fast
@@ -23,6 +31,9 @@ export class RainMode extends Mode {
     }
 
     updateParticle(particle, landmarks, canvasSize) {
+        // Store landmarks for face mask
+        this.landmarks = landmarks;
+        
         // Check if particle is near any landmark
         let nearLandmark = false;
         let closestDist = Infinity;
@@ -67,12 +78,13 @@ export class RainMode extends Mode {
         return 1.0;  // No additional friction (handled internally)
     }
 
-    getMaxSpeed() {
-        return 5;
-    }
-
     usesFriction() {
         return false;  // Rain handles its own damping
+    }
+
+    onAfterRender(ctx, canvasSize) {
+        // Draw face mask overlay
+        this.faceMask.draw(ctx, this.landmarks, canvasSize);
     }
 
     handleEdges(particle, canvasSize) {
