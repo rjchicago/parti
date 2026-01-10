@@ -7,7 +7,7 @@ export class GalacticMode extends Mode {
         this.twinkleSpeed = 0.005;
         this.driftSpeed = 0.1;
         
-        // Hand interaction - stars twinkle when hands pass over
+        // Interaction - stars twinkle when hands/face pass over
         this.handTwinkleRadius = 100; // pixels
         
         // Shooting stars
@@ -91,18 +91,16 @@ export class GalacticMode extends Mode {
         // Store landmarks for face mask
         this.landmarks = landmarks;
         
-        // Check for hand proximity - stars twinkle brighter when hands pass over
+        // Check for hand/face proximity - stars twinkle brighter when passing over
         particle.handTwinkle = 0;
         for (const lm of landmarks) {
-            if (lm.type === 'hand') {
-                const dx = particle.x - lm.x;
-                const dy = particle.y - lm.y;
-                const dist = Math.sqrt(dx * dx + dy * dy);
-                if (dist < this.handTwinkleRadius) {
-                    // Closer = brighter twinkle
-                    const intensity = 1 - (dist / this.handTwinkleRadius);
-                    particle.handTwinkle = Math.max(particle.handTwinkle, intensity);
-                }
+            const dx = particle.x - lm.x;
+            const dy = particle.y - lm.y;
+            const dist = Math.sqrt(dx * dx + dy * dy);
+            if (dist < this.handTwinkleRadius) {
+                // Closer = brighter twinkle
+                const intensity = 1 - (dist / this.handTwinkleRadius);
+                particle.handTwinkle = Math.max(particle.handTwinkle, intensity);
             }
         }
         

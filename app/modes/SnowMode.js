@@ -10,7 +10,7 @@ export class SnowMode extends Mode {
         this.gravity = 0.04;
         this.terminalVelocity = 1;
         this.wobbleStrength = 0.15;
-        this.collisionRadius = 60;
+        this.collisionRadius = 20;
         this.landmarks = [];
         
         // Face mask with white/ice color

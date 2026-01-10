@@ -10,7 +10,7 @@ export class RainMode extends Mode {
         this.gravity = 0.4;
         this.terminalVelocity = 8;
         this.dripSpeed = 0.5;
-        this.collisionRadius = 80;
+        this.collisionRadius = 20;
         this.landmarks = [];
         
         // Face mask with ocean blue color

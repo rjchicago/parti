@@ -53,9 +53,9 @@ const STORAGE_KEY = 'parti-settings';
 const DEFAULT_SETTINGS = {
     mode: 'party',
     theme: 0,
-    particleCount: 5000,
+    particleCount: new Date().getFullYear(),
     fistAction: 'none',
-    cameraVisible: true,
+    cameraVisible: false,
     maskVisible: true
 };
 
@@ -94,16 +94,16 @@ function resetSettings() {
 
 // ===== Global State =====
 let state = {
-    mode: 'party',
-    cameraVisible: true,
-    maskVisible: true,
+    mode: DEFAULT_SETTINGS.mode,
+    cameraVisible: DEFAULT_SETTINGS.cameraVisible,
+    maskVisible: DEFAULT_SETTINGS.maskVisible,
+    fistAction: DEFAULT_SETTINGS.fistAction,
     isRunning: false,
     paused: false,
     handResults: null,
     faceResults: null,
     lastFistTime: 0,
-    fistCooldown: 500,
-    fistAction: 'none'
+    fistCooldown: 500
 };
 
 // DOM Elements

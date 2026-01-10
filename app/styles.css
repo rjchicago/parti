@@ -69,6 +69,16 @@ html, body {
     -webkit-text-fill-color: transparent;
     background-clip: text;
     animation: gradientShift 4s ease infinite;
+}
+
+.logo-i {
+    font-size: 0.935em;
+    vertical-align: baseline;
+    background: inherit;
+    background-size: inherit;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
     text-shadow: none;
     filter: drop-shadow(0 0 30px rgba(0, 245, 255, 0.4));
 }
