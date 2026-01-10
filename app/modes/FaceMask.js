@@ -140,7 +140,7 @@ export class FaceMask {
         ctx.moveTo(leftMouth.x, leftMouth.y);
         ctx.quadraticCurveTo(
             (leftMouth.x + rightMouth.x) / 2,
-            lowerLip.y + mouthOpen * 0.2,
+            lowerLip.y + mouthOpen * 0.5,
             rightMouth.x,
             rightMouth.y
         );

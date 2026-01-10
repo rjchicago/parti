@@ -1,4 +1,4 @@
-import { AttractMode, RepelMode, RainMode, SnowMode, PartyMode, GalacticMode, MatrixMode } from './modes/index.js';
+import { AttractMode, RepelMode, RainMode, SnowMode, PartyMode, GalacticMode, MatrixMode, GravityMode } from './modes/index.js';
 
 // Golden ratio for organic distribution
 const PHI = 1.618033988749895;
@@ -58,7 +58,8 @@ export class ParticleSystem {
             snow: new SnowMode(),
             party: new PartyMode(),
             galactic: new GalacticMode(),
-            matrix: new MatrixMode()
+            matrix: new MatrixMode(),
+            gravity: new GravityMode()
         };
         this.currentMode = this.modes.attract;
     }

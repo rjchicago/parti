@@ -93,11 +93,18 @@ function resetSettings() {
 }
 
 // ===== Global State =====
+// Detect mobile device
+function isMobileDevice() {
+    return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) ||
+           (window.innerWidth <= 768);
+}
+
 let state = {
     mode: DEFAULT_SETTINGS.mode,
     cameraVisible: DEFAULT_SETTINGS.cameraVisible,
     maskVisible: DEFAULT_SETTINGS.maskVisible,
     fistAction: DEFAULT_SETTINGS.fistAction,
+    mobileLayout: isMobileDevice(),
     isRunning: false,
     paused: false,
     handResults: null,
@@ -110,7 +117,7 @@ let state = {
 let introScreen, app, particleCanvas;
 let cameraFeed, overlayCanvas, overlayCtx;
 let statusIndicator, statusDot, statusText;
-let attractBtn, repelBtn, rainBtn, snowBtn, partyBtn, galacticBtn, matrixBtn, themeSelect;
+let attractBtn, repelBtn, rainBtn, snowBtn, partyBtn, galacticBtn, matrixBtn, gravityBtn, themeSelect;
 let particleCountEl, cameraPreviewContainer, fistActionSelect;
 
 // Core systems
@@ -138,6 +145,7 @@ function init() {
     partyBtn = document.getElementById('party-btn');
     galacticBtn = document.getElementById('galactic-btn');
     matrixBtn = document.getElementById('matrix-btn');
+    gravityBtn = document.getElementById('gravity-btn');
     themeSelect = document.getElementById('theme-select');
     particleCountEl = document.getElementById('active-particles');
     cameraPreviewContainer = document.getElementById('camera-preview-container');
@@ -152,6 +160,7 @@ function init() {
     partyBtn.addEventListener('click', () => setMode('party'));
     galacticBtn.addEventListener('click', () => setMode('galactic'));
     matrixBtn.addEventListener('click', () => setMode('matrix'));
+    gravityBtn.addEventListener('click', () => setMode('gravity'));
     themeSelect.addEventListener('change', (e) => setTheme(parseInt(e.target.value)));
     fistActionSelect.addEventListener('change', (e) => { 
         state.fistAction = e.target.value;
@@ -188,6 +197,9 @@ function init() {
     
     // Detect wake from sleep - check if camera is still valid
     document.addEventListener('visibilitychange', handleVisibilityChange);
+
+    // Apply initial layout (mobile detection)
+    applyLayout();
 
     // Create intro particles
     createIntroParticles();
@@ -629,12 +641,13 @@ function setMode(mode) {
     partyBtn.classList.toggle('active', mode === 'party');
     galacticBtn.classList.toggle('active', mode === 'galactic');
     matrixBtn.classList.toggle('active', mode === 'matrix');
+    gravityBtn.classList.toggle('active', mode === 'gravity');
     
     saveSettings();
 }
 
 function cycleMode() {
-    const modes = ['party', 'attract', 'repel', 'rain', 'snow', 'galactic', 'matrix'];
+    const modes = ['party', 'attract', 'repel', 'rain', 'snow', 'galactic', 'matrix', 'gravity'];
     const currentIndex = modes.indexOf(state.mode);
     const nextMode = modes[(currentIndex + 1) % modes.length];
     setMode(nextMode);
@@ -668,6 +681,29 @@ function toggleMask() {
         particleSystem.setMaskVisible(state.maskVisible);
     }
     saveSettings();
+}
+
+function toggleLayout() {
+    state.mobileLayout = !state.mobileLayout;
+    applyLayout();
+}
+
+function applyLayout() {
+    const shortcutsPanel = document.getElementById('shortcuts-panel');
+    const themeSelector = document.querySelector('.theme-selector');
+    const fistSelector = document.querySelector('.fist-action-selector');
+    
+    if (state.mobileLayout) {
+        // Mobile layout - hide keyboard shortcuts and selectors
+        if (shortcutsPanel) shortcutsPanel.style.display = 'none';
+        if (themeSelector) themeSelector.style.display = 'none';
+        if (fistSelector) fistSelector.style.display = 'none';
+    } else {
+        // Desktop layout - show all
+        if (shortcutsPanel) shortcutsPanel.style.display = '';
+        if (themeSelector) themeSelector.style.display = '';
+        if (fistSelector) fistSelector.style.display = '';
+    }
 }
 
 function handleVisibilityChange() {
@@ -735,6 +771,9 @@ function handleKeyboard(e) {
             break;
         case 'KeyM':
             toggleMask();
+            break;
+        case 'KeyL':
+            toggleLayout();
             break;
         case 'ArrowUp':
             e.preventDefault();

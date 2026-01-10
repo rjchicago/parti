@@ -9,6 +9,8 @@ export class AttractMode extends Mode {
         super('attract', '🧲');
         this.attraction = 0.08;
         this.returnSpeed = 0.02;
+        this.buzzStrength = 0.8;  // Intensity of the buzz
+        this.buzzThreshold = 75;  // Distance at which buzzing starts
         this.landmarks = [];
         
         // Face mask with Matrix green
@@ -31,6 +33,13 @@ export class AttractMode extends Mode {
                 const force = this.attraction * Math.min(dist * 0.1, 10);
                 particle.vx += (dx / dist) * force;
                 particle.vy += (dy / dist) * force;
+            }
+            
+            // Add buzz when close to target - particles vibrate instead of settling
+            if (dist < this.buzzThreshold) {
+                const buzzIntensity = (1 - dist / this.buzzThreshold) * this.buzzStrength;
+                particle.vx += (Math.random() - 0.5) * buzzIntensity;
+                particle.vy += (Math.random() - 0.5) * buzzIntensity;
             }
         } else {
             // No landmarks - drift back to base position
