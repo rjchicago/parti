@@ -51,7 +51,7 @@ const DEPTH_LANDMARKS = {
 const STORAGE_KEY = 'parti-settings';
 
 const DEFAULT_SETTINGS = {
-    mode: 'attract',
+    mode: 'party',
     theme: 0,
     particleCount: 5000,
     fistAction: 'none',
@@ -92,7 +92,7 @@ function resetSettings() {
 
 // ===== Global State =====
 let state = {
-    mode: 'attract',
+    mode: 'party',
     cameraVisible: true,
     isRunning: false,
     paused: false,
@@ -399,6 +399,12 @@ function processLandmarks() {
     const LEFT_EYE_CENTER = 159;  // Center of left eye
     const RIGHT_EYE_CENTER = 386; // Center of right eye
     
+    // Lip landmarks for animated mouth
+    const UPPER_LIP_CENTER = 13;  // Top center of upper lip
+    const LOWER_LIP_CENTER = 14;  // Bottom center of lower lip
+    const LEFT_MOUTH_CORNER = 61;
+    const RIGHT_MOUTH_CORNER = 291;
+    
     if (state.faceResults?.multiFaceLandmarks) {
         for (const faceLandmarks of state.faceResults.multiFaceLandmarks) {
             for (let i = 0; i < faceLandmarks.length; i++) {
@@ -418,6 +424,10 @@ function processLandmarks() {
                 let feature = null;
                 if (i === LEFT_EYE_CENTER) feature = 'leftEye';
                 else if (i === RIGHT_EYE_CENTER) feature = 'rightEye';
+                else if (i === UPPER_LIP_CENTER) feature = 'upperLip';
+                else if (i === LOWER_LIP_CENTER) feature = 'lowerLip';
+                else if (i === LEFT_MOUTH_CORNER) feature = 'leftMouth';
+                else if (i === RIGHT_MOUTH_CORNER) feature = 'rightMouth';
                 else if (FACE_LANDMARKS.lips.includes(i)) feature = 'lips';
 
                 landmarks.push({
@@ -608,7 +618,7 @@ function setMode(mode) {
 }
 
 function cycleMode() {
-    const modes = ['attract', 'repel', 'rain', 'snow', 'party', 'galactic', 'matrix'];
+    const modes = ['party', 'attract', 'repel', 'rain', 'snow', 'galactic', 'matrix'];
     const currentIndex = modes.indexOf(state.mode);
     const nextMode = modes[(currentIndex + 1) % modes.length];
     setMode(nextMode);

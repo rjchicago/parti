@@ -142,7 +142,10 @@ export class PartyMode extends Mode {
         // Find face features for happy face mask
         const leftEye = this.landmarks.find(lm => lm.feature === 'leftEye');
         const rightEye = this.landmarks.find(lm => lm.feature === 'rightEye');
-        const lipLandmarks = this.landmarks.filter(lm => lm.feature === 'lips');
+        const upperLip = this.landmarks.find(lm => lm.feature === 'upperLip');
+        const lowerLip = this.landmarks.find(lm => lm.feature === 'lowerLip');
+        const leftMouth = this.landmarks.find(lm => lm.feature === 'leftMouth');
+        const rightMouth = this.landmarks.find(lm => lm.feature === 'rightMouth');
         
         ctx.globalAlpha = 0.4;
         
@@ -170,19 +173,34 @@ export class PartyMode extends Mode {
             ctx.arc(rightEye.x, rightEye.y, eyeRadius, 0, Math.PI * 2);
             ctx.fill();
             
-            // Draw smile curve
-            if (lipLandmarks.length > 0) {
-                // Find mouth corners and bottom center for smile
-                const mouthCenterX = (leftEye.x + rightEye.x) / 2;
-                const mouthY = lipLandmarks.reduce((sum, lm) => sum + lm.y, 0) / lipLandmarks.length;
-                const eyeDistance = Math.abs(rightEye.x - leftEye.x);
-                const smileWidth = eyeDistance * 0.8;
+            // Draw animated mouth with two curves
+            if (upperLip && lowerLip && leftMouth && rightMouth) {
+                const mouthWidth = Math.abs(rightMouth.x - leftMouth.x);
+                const mouthOpen = Math.abs(lowerLip.y - upperLip.y);
                 
                 ctx.lineWidth = 4;
                 ctx.lineCap = 'round';
                 
+                // Upper lip curve (smile curve going up at corners)
                 ctx.beginPath();
-                ctx.arc(mouthCenterX, mouthY - 15, smileWidth / 2, 0.2 * Math.PI, 0.8 * Math.PI);
+                ctx.moveTo(leftMouth.x, leftMouth.y);
+                ctx.quadraticCurveTo(
+                    (leftMouth.x + rightMouth.x) / 2,
+                    upperLip.y - mouthOpen * 0.3, // Curve upward for smile
+                    rightMouth.x,
+                    rightMouth.y
+                );
+                ctx.stroke();
+                
+                // Lower lip curve (tracks actual mouth opening)
+                ctx.beginPath();
+                ctx.moveTo(leftMouth.x, leftMouth.y);
+                ctx.quadraticCurveTo(
+                    (leftMouth.x + rightMouth.x) / 2,
+                    lowerLip.y + mouthOpen * 0.2, // Follows lower lip
+                    rightMouth.x,
+                    rightMouth.y
+                );
                 ctx.stroke();
             }
         }
