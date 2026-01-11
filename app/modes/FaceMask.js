@@ -105,6 +105,13 @@ export class FaceMask {
     }
 
     drawEyes(ctx, leftEye, rightEye, time) {
+        // Calculate eye radius based on eye distance (scales with head proximity)
+        const eyeDistance = Math.sqrt(
+            Math.pow(rightEye.x - leftEye.x, 2) + 
+            Math.pow(rightEye.y - leftEye.y, 2)
+        );
+        const dynamicEyeRadius = eyeDistance * 0.12; // ~12% of eye distance
+        
         // Random blink timing
         const now = performance.now();
         if (now > this.nextBlinkTime) {
@@ -118,21 +125,21 @@ export class FaceMask {
             ctx.lineCap = 'round';
             
             ctx.beginPath();
-            ctx.moveTo(leftEye.x - this.eyeRadius, leftEye.y);
-            ctx.lineTo(leftEye.x + this.eyeRadius, leftEye.y);
+            ctx.moveTo(leftEye.x - dynamicEyeRadius, leftEye.y);
+            ctx.lineTo(leftEye.x + dynamicEyeRadius, leftEye.y);
             ctx.stroke();
             
             ctx.beginPath();
-            ctx.moveTo(rightEye.x - this.eyeRadius, rightEye.y);
-            ctx.lineTo(rightEye.x + this.eyeRadius, rightEye.y);
+            ctx.moveTo(rightEye.x - dynamicEyeRadius, rightEye.y);
+            ctx.lineTo(rightEye.x + dynamicEyeRadius, rightEye.y);
             ctx.stroke();
         } else {
             ctx.beginPath();
-            ctx.arc(leftEye.x, leftEye.y, this.eyeRadius, 0, Math.PI * 2);
+            ctx.arc(leftEye.x, leftEye.y, dynamicEyeRadius, 0, Math.PI * 2);
             ctx.fill();
             
             ctx.beginPath();
-            ctx.arc(rightEye.x, rightEye.y, this.eyeRadius, 0, Math.PI * 2);
+            ctx.arc(rightEye.x, rightEye.y, dynamicEyeRadius, 0, Math.PI * 2);
             ctx.fill();
         }
     }

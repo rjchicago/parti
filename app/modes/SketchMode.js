@@ -24,6 +24,8 @@ export class SketchMode extends Mode {
         // Index finger tracer lines
         this.fingerTrails = new Map(); // handId -> array of {x, y, time}
         this.trailFadeDuration = 10000; // 10 seconds fade
+        this.lastIndexPos = new Map(); // Track last index finger position per hand
+        this.maxGapTime = 100; // Max ms to bridge gaps (1-2 frames at 60fps)
         
         // Face mask with dark gray
         this.faceMask = new FaceMask({ 
@@ -81,6 +83,23 @@ export class SketchMode extends Mode {
                 }
                 const trail = this.fingerTrails.get(handId);
                 
+                // Check if we need to bridge a gap (1-2 missed frames)
+                const lastPos = this.lastIndexPos.get(handId);
+                if (lastPos && trail.length > 0) {
+                    const timeSinceLast = now - lastPos.time;
+                    if (timeSinceLast > 20 && timeSinceLast <= this.maxGapTime) {
+                        // Bridge the gap with interpolated points
+                        const steps = Math.ceil(timeSinceLast / 16); // ~60fps
+                        for (let i = 1; i < steps; i++) {
+                            const t = i / steps;
+                            const interpX = lastPos.x + (indexTip.x - lastPos.x) * t;
+                            const interpY = lastPos.y + (indexTip.y - lastPos.y) * t;
+                            const interpTime = lastPos.time + timeSinceLast * t;
+                            trail.push({ x: interpX, y: interpY, time: interpTime, speed: lastPos.speed });
+                        }
+                    }
+                }
+                
                 // Calculate speed from previous point
                 let speed = 0;
                 if (trail.length > 0) {
@@ -94,10 +113,16 @@ export class SketchMode extends Mode {
                 
                 trail.push({ x: indexTip.x, y: indexTip.y, time: now, speed: speed });
                 
+                // Update last known position
+                this.lastIndexPos.set(handId, { x: indexTip.x, y: indexTip.y, time: now, speed: speed });
+                
                 // Remove old points
                 while (trail.length > 0 && now - trail[0].time > this.trailFadeDuration) {
                     trail.shift();
                 }
+            } else if (indexTip) {
+                // Even when not pointing, track position to bridge gaps when resuming
+                this.lastIndexPos.set(handId, { x: indexTip.x, y: indexTip.y, time: now, speed: 0 });
             }
         }
         
@@ -279,10 +304,25 @@ export class SketchMode extends Mode {
                 const age = now - point.time;
                 const alpha = Math.max(0.1, 1 - age / this.trailFadeDuration);
                 
-                // Line width: thick (5) for slow, thin (1) for fast
-                // Speed is in pixels per millisecond, typical range 0-2
-                const speed = point.speed || 0;
-                const lineWidth = Math.max(1, 5 - speed * 3);
+                // Average speed over nearby points for smoother transitions
+                let avgSpeed = 0;
+                const smoothWindow = 5;
+                const startIdx = Math.max(0, i - smoothWindow);
+                const endIdx = Math.min(trail.length - 1, i + smoothWindow);
+                let count = 0;
+                for (let j = startIdx; j <= endIdx; j++) {
+                    avgSpeed += trail[j].speed || 0;
+                    count++;
+                }
+                avgSpeed = count > 0 ? avgSpeed / count : 0;
+                
+                // Line width: thick (6) for slow, thin (1.5) for fast
+                // Use exponential decay for smoother gradient
+                // Speed is in pixels per millisecond, typical range 0-3
+                const minWidth = 1.5;
+                const maxWidth = 6;
+                const speedFactor = Math.exp(-avgSpeed * 1.5); // Smooth exponential decay
+                const lineWidth = minWidth + (maxWidth - minWidth) * speedFactor;
                 
                 ctx.strokeStyle = `rgba(50, 50, 50, ${alpha})`;
                 ctx.lineWidth = lineWidth;
