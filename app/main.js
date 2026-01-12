@@ -47,12 +47,24 @@ function init() {
 /**
  * Dynamically render mode buttons from modeRegistry
  */
+/**
+ * Get available modes for current platform
+ */
+function getAvailableModes() {
+    const isMobile = stateManager.get('mobileLayout');
+    return MODE_ORDER.filter(key => {
+        const mode = modeRegistry[key];
+        return isMobile ? mode.supportsMobile : mode.supportsDesktop;
+    });
+}
+
 function renderModeButtons() {
     if (!elements.modeControls) return;
     
     const currentMode = stateManager.get('mode');
+    const availableModes = getAvailableModes();
     
-    elements.modeControls.innerHTML = MODE_ORDER.map(key => {
+    elements.modeControls.innerHTML = availableModes.map(key => {
         const mode = modeRegistry[key];
         const isActive = key === currentMode ? ' active' : '';
         return `<button class="mode-btn${isActive}" data-mode="${mode.name}">
@@ -199,10 +211,11 @@ async function startApp() {
         particleSystem.init();
         particleSystem.setTheme(stateManager.get('theme'));
         
-        // Apply mode - fallback to 'party' if saved mode doesn't exist
+        // Apply mode - fallback if saved mode doesn't exist or isn't available on this platform
         let savedMode = stateManager.get('mode');
-        if (!modeRegistry[savedMode]) {
-            savedMode = 'party';
+        const availableModes = getAvailableModes();
+        if (!modeRegistry[savedMode] || !availableModes.includes(savedMode)) {
+            savedMode = availableModes[0] || 'party';
             stateManager.set('mode', savedMode, true);
         }
         particleSystem.setMode(savedMode);
@@ -340,14 +353,16 @@ function setMode(mode) {
 }
 
 function cycleMode() {
-    const currentIndex = MODE_ORDER.indexOf(stateManager.get('mode'));
-    const nextMode = MODE_ORDER[(currentIndex + 1) % MODE_ORDER.length];
+    const availableModes = getAvailableModes();
+    const currentIndex = availableModes.indexOf(stateManager.get('mode'));
+    const nextMode = availableModes[(currentIndex + 1) % availableModes.length];
     setMode(nextMode);
 }
 
 function cycleModeUp() {
-    const currentIndex = MODE_ORDER.indexOf(stateManager.get('mode'));
-    const prevMode = MODE_ORDER[(currentIndex - 1 + MODE_ORDER.length) % MODE_ORDER.length];
+    const availableModes = getAvailableModes();
+    const currentIndex = availableModes.indexOf(stateManager.get('mode'));
+    const prevMode = availableModes[(currentIndex - 1 + availableModes.length) % availableModes.length];
     setMode(prevMode);
 }
 

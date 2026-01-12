@@ -80,6 +80,9 @@ export class BrickBreakerMode extends Mode {
         this.landmarks = [];
         this.faceMask = new FaceMask();
         
+        // Platform support
+        this.supportsMobile = false; // Awkward on mobile devices
+        
         // Display auto-hide tracking
         this.userDisplayWasVisible = null; // Store user's preference before auto-hiding
         this.displayHidden = false; // Track if we auto-hid the display

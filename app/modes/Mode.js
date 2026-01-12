@@ -6,6 +6,10 @@ export class Mode {
         this.name = name;
         this.icon = icon;
         this.label = label;
+        
+        // Platform support (override in subclass if needed)
+        this.supportsMobile = true;
+        this.supportsDesktop = true;
     }
 
     /**
