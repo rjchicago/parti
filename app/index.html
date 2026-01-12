@@ -53,45 +53,8 @@
             <span class="status-text">Initializing...</span>
         </div>
 
-        <!-- Mode Controls (top left) -->
-        <div id="mode-controls">
-            <button id="party-btn" class="mode-btn active" data-mode="party">
-                <span class="mode-icon">🎉</span>
-                <span class="mode-label">Party</span>
-            </button>
-            <button id="attract-btn" class="mode-btn" data-mode="attract">
-                <span class="mode-icon">🧲</span>
-                <span class="mode-label">Attract</span>
-            </button>
-            <button id="repel-btn" class="mode-btn" data-mode="repel">
-                <span class="mode-icon">💨</span>
-                <span class="mode-label">Repel</span>
-            </button>
-            <button id="rain-btn" class="mode-btn" data-mode="rain">
-                <span class="mode-icon">🌧️</span>
-                <span class="mode-label">Rain</span>
-            </button>
-            <button id="snow-btn" class="mode-btn" data-mode="snow">
-                <span class="mode-icon">❄️</span>
-                <span class="mode-label">Snow</span>
-            </button>
-            <button id="galactic-btn" class="mode-btn" data-mode="galactic">
-                <span class="mode-icon">🌌</span>
-                <span class="mode-label">Galactic</span>
-            </button>
-            <button id="matrix-btn" class="mode-btn" data-mode="matrix">
-                <span class="mode-icon">💊</span>
-                <span class="mode-label">Matrix</span>
-            </button>
-            <button id="gravity-btn" class="mode-btn" data-mode="gravity">
-                <span class="mode-icon">⚛️</span>
-                <span class="mode-label">Gravity</span>
-            </button>
-            <button id="sketch-btn" class="mode-btn" data-mode="sketch">
-                <span class="mode-icon">✏️</span>
-                <span class="mode-label">Sketch</span>
-            </button>
-        </div>
+        <!-- Mode Controls (top left) - dynamically populated from modeRegistry -->
+        <div id="mode-controls"></div>
 
         <!-- Keyboard Shortcuts Panel (bottom right) -->
         <div id="shortcuts-panel">
@@ -179,6 +142,6 @@
     <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js" crossorigin="anonymous"></script>
     <script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js" crossorigin="anonymous"></script>
     <script src="https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh/face_mesh.js" crossorigin="anonymous"></script>
-    <script type="module" src="app.js"></script>
+    <script type="module" src="main.js"></script>
 </body>
 </html>

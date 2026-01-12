@@ -1,10 +1,27 @@
-export { Mode } from './Mode.js';
-export { AttractMode } from './AttractMode.js';
-export { RepelMode } from './RepelMode.js';
-export { RainMode } from './RainMode.js';
-export { SnowMode } from './SnowMode.js';
-export { PartyMode } from './PartyMode.js';
-export { GalacticMode } from './GalacticMode.js';
-export { MatrixMode } from './MatrixMode.js';
-export { GravityMode } from './GravityMode.js';
-export { SketchMode } from './SketchMode.js';
+import { Mode } from './Mode.js';
+import { AttractMode } from './AttractMode.js';
+import { RepelMode } from './RepelMode.js';
+import { RainMode } from './RainMode.js';
+import { SnowMode } from './SnowMode.js';
+import { PartyMode } from './PartyMode.js';
+import { GalacticMode } from './GalacticMode.js';
+import { MatrixMode } from './MatrixMode.js';
+import { GravityMode } from './GravityMode.js';
+import { SketchMode } from './SketchMode.js';
+
+// Export classes for direct use
+export { Mode, AttractMode, RepelMode, RainMode, SnowMode, PartyMode, GalacticMode, MatrixMode, GravityMode, SketchMode };
+
+// Mode registry - instantiated modes keyed by name
+// Add new modes here: they self-describe via name, icon, and label
+export const modeRegistry = {
+    party: new PartyMode(),
+    attract: new AttractMode(),
+    repel: new RepelMode(),
+    rain: new RainMode(),
+    snow: new SnowMode(),
+    galactic: new GalacticMode(),
+    matrix: new MatrixMode(),
+    gravity: new GravityMode(),
+    sketch: new SketchMode(),
+};

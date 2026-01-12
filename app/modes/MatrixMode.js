@@ -6,7 +6,7 @@ const MATRIX_CHARS = 'アイウエオカキクケコサシスセソタチツテ�
 
 export class MatrixMode extends Mode {
     constructor() {
-        super('matrix', '💊');
+        super('matrix', '💊', 'Matrix');
         
         // Stream configuration
         this.streams = [];

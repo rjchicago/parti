@@ -6,7 +6,7 @@ import { FaceMask } from './FaceMask.js';
  */
 export class RainMode extends Mode {
     constructor() {
-        super('rain', '🌧️');
+        super('rain', '🌧️', 'Rain');
         this.gravity = 0.4;
         this.terminalVelocity = 8;
         this.dripSpeed = 0.5;

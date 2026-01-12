@@ -6,7 +6,7 @@ import { FaceMask } from './FaceMask.js';
  */
 export class SketchMode extends Mode {
     constructor() {
-        super('sketch', '✏️');
+        super('sketch', '✏️', 'Sketch');
         
         // Gentle downward gravity
         this.gravity = 0.02;

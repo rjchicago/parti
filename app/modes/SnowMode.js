@@ -6,7 +6,7 @@ import { FaceMask } from './FaceMask.js';
  */
 export class SnowMode extends Mode {
     constructor() {
-        super('snow', '❄️');
+        super('snow', '❄️', 'Snow');
         this.gravity = 0.04;
         this.terminalVelocity = 1;
         this.wobbleStrength = 0.15;

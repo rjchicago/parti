@@ -2,9 +2,10 @@
  * Base class for particle behavior modes
  */
 export class Mode {
-    constructor(name, icon) {
+    constructor(name, icon, label) {
         this.name = name;
         this.icon = icon;
+        this.label = label;
     }
 
     /**
