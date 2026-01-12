@@ -111,4 +111,12 @@ export class Mode {
         particle.x = Math.random() * canvasSize.width;
         particle.y = Math.random() * canvasSize.height;
     }
+
+    /**
+     * Called when mode is activated (switched to)
+     * @param {Object} canvasSize - { width, height }
+     */
+    onActivate(canvasSize) {
+        // Override in subclasses for activation behavior
+    }
 }

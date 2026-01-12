@@ -2,6 +2,8 @@
  * StateManager - Centralized state management and localStorage persistence
  */
 
+import { MODE_ORDER } from './config.js';
+
 const STORAGE_KEY = 'parti-settings';
 
 const DEFAULT_SETTINGS = {
@@ -10,8 +12,18 @@ const DEFAULT_SETTINGS = {
     particleCount: new Date().getFullYear(),
     fistAction: 'none',
     cameraVisible: false,
-    maskVisible: true
+    maskVisible: true,
+    displayVisible: true
 };
+
+// Check for reset URL parameter
+if (typeof window !== 'undefined') {
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.get('reset') === 'true') {
+        localStorage.removeItem(STORAGE_KEY);
+        window.location.href = window.location.pathname;
+    }
+}
 
 class StateManager {
     constructor() {
@@ -23,9 +35,11 @@ class StateManager {
             fistAction: DEFAULT_SETTINGS.fistAction,
             cameraVisible: DEFAULT_SETTINGS.cameraVisible,
             maskVisible: DEFAULT_SETTINGS.maskVisible,
+            displayVisible: DEFAULT_SETTINGS.displayVisible,
             
             // Runtime state (not persisted)
             mobileLayout: this._detectMobile(),
+            displayOverrideHidden: false, // Soft hide by modes (e.g. BrickBreaker)
             isRunning: false,
             paused: false,
             handResults: null,
@@ -64,6 +78,11 @@ class StateManager {
             const saved = localStorage.getItem(STORAGE_KEY);
             if (saved) {
                 const parsed = JSON.parse(saved);
+                // Validate mode - fallback to default if invalid
+                if (parsed.mode && !MODE_ORDER.includes(parsed.mode)) {
+                    console.warn(`Invalid mode "${parsed.mode}", resetting to default`);
+                    parsed.mode = DEFAULT_SETTINGS.mode;
+                }
                 Object.assign(this.state, { ...DEFAULT_SETTINGS, ...parsed });
             }
         } catch (e) {
@@ -83,7 +102,8 @@ class StateManager {
                 particleCount: this.state.particleCount,
                 fistAction: this.state.fistAction,
                 cameraVisible: this.state.cameraVisible,
-                maskVisible: this.state.maskVisible
+                maskVisible: this.state.maskVisible,
+                displayVisible: this.state.displayVisible
             };
             localStorage.setItem(STORAGE_KEY, JSON.stringify(settings));
         } catch (e) {

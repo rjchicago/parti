@@ -38,8 +38,6 @@ function init() {
     stateManager.load();
     applySettingsToUI();
     
-    // Apply layout
-    applyLayout();
     showLayoutIndicator();
     
     // Create intro particles
@@ -91,6 +89,9 @@ function cacheElements() {
     elements.resetLink = document.getElementById('reset-settings');
     elements.shortcutsPanel = document.getElementById('shortcuts-panel');
     elements.layoutIndicator = document.getElementById('layout-indicator');
+    elements.helpBtn = document.getElementById('help-btn');
+    elements.particleCount = document.getElementById('particle-count');
+    elements.pauseOverlay = document.getElementById('pause-overlay');
 }
 
 function setupEventListeners() {
@@ -129,9 +130,19 @@ function setupEventListeners() {
         stateManager.reset();
     });
     
+    // Help button (toggle display)
+    elements.helpBtn?.addEventListener('click', toggleDisplay);
+    
+    // BrickBreaker display auto-hide events
+    window.addEventListener('brickbreaker:hideDisplay', handleBrickBreakerHideDisplay);
+    window.addEventListener('brickbreaker:showDisplay', handleBrickBreakerShowDisplay);
+    
     // Keyboard
     document.addEventListener('keydown', handleKeydown);
     document.addEventListener('keyup', handleKeyup);
+    
+    // Canvas click (for modes that need it, like BrickBreaker)
+    elements.particleCanvas?.addEventListener('click', handleCanvasClick);
     
     // Resize
     window.addEventListener('resize', handleResize);
@@ -175,6 +186,9 @@ async function startApp() {
         // Show app
         elements.introScreen.classList.add('hidden');
         elements.app.classList.remove('hidden');
+        
+        // Apply display visibility (UI hidden by default)
+        applyDisplay();
 
         // Initialize particle system
         const particleCount = stateManager.get('particleCount');
@@ -184,11 +198,18 @@ async function startApp() {
         });
         particleSystem.init();
         particleSystem.setTheme(stateManager.get('theme'));
-        particleSystem.setMode(stateManager.get('mode'));
+        
+        // Apply mode - fallback to 'party' if saved mode doesn't exist
+        let savedMode = stateManager.get('mode');
+        if (!modeRegistry[savedMode]) {
+            savedMode = 'party';
+            stateManager.set('mode', savedMode, true);
+        }
+        particleSystem.setMode(savedMode);
         particleSystem.setMaskVisible(stateManager.get('maskVisible'));
         
         // Apply mode to UI
-        setMode(stateManager.get('mode'));
+        setMode(savedMode);
         
         // Apply camera visibility
         elements.cameraPreviewContainer.style.display = 
@@ -294,6 +315,12 @@ function updateStatusFromDetections(handResults, faceResults) {
 
 // ===== UI Controls =====
 function setMode(mode) {
+    // Clear any soft display override from previous mode
+    if (stateManager.get('displayOverrideHidden')) {
+        stateManager.set('displayOverrideHidden', false);
+        applyDisplay();
+    }
+    
     stateManager.set('mode', mode, true);
     
     if (particleSystem) {
@@ -348,6 +375,11 @@ function togglePause() {
     const paused = !stateManager.get('paused');
     stateManager.set('paused', paused);
     updateStatus(paused ? 'Paused' : 'Tracking', paused ? 'warning' : 'active');
+    
+    // Show/hide pause overlay (always visible when paused, regardless of display setting)
+    if (elements.pauseOverlay) {
+        elements.pauseOverlay.classList.toggle('hidden', !paused);
+    }
 }
 
 function toggleMask() {
@@ -356,17 +388,41 @@ function toggleMask() {
     particleSystem?.setMaskVisible(visible);
 }
 
-function toggleLayout() {
-    const mobile = !stateManager.get('mobileLayout');
-    stateManager.set('mobileLayout', mobile);
-    applyLayout();
+function toggleDisplay() {
+    const visible = !stateManager.get('displayVisible');
+    stateManager.set('displayVisible', visible, true); // Persist to localStorage
+    applyDisplay();
 }
 
-function applyLayout() {
-    const isMobile = stateManager.get('mobileLayout');
-    if (elements.shortcutsPanel) {
-        elements.shortcutsPanel.style.display = isMobile ? 'none' : '';
-    }
+function applyDisplay() {
+    // Display is visible if user wants it AND not soft-hidden by a mode
+    const userWantsVisible = stateManager.get('displayVisible');
+    const softHidden = stateManager.get('displayOverrideHidden');
+    const visible = userWantsVisible && !softHidden;
+    
+    const hideStyle = visible ? '' : 'none';
+    const showStyle = visible ? 'none' : '';
+    
+    // Hide/show UI elements
+    if (elements.shortcutsPanel) elements.shortcutsPanel.style.display = hideStyle;
+    if (elements.modeControls) elements.modeControls.style.display = hideStyle;
+    if (elements.particleCount) elements.particleCount.style.display = hideStyle;
+    if (elements.settingsLink) elements.settingsLink.style.display = hideStyle;
+    if (elements.statusIndicator) elements.statusIndicator.style.display = hideStyle;
+    
+    // Show/hide help button (inverse of other elements)
+    if (elements.helpBtn) elements.helpBtn.style.display = showStyle;
+}
+
+// BrickBreaker display soft-hide (doesn't affect user preference)
+function handleBrickBreakerHideDisplay() {
+    stateManager.set('displayOverrideHidden', true);
+    applyDisplay();
+}
+
+function handleBrickBreakerShowDisplay() {
+    stateManager.set('displayOverrideHidden', false);
+    applyDisplay();
 }
 
 function updateStatus(text, statusClass) {
@@ -394,7 +450,7 @@ function handleKeydown(e) {
             toggleMask();
             break;
         case 'KeyD':
-            toggleLayout();
+            toggleDisplay();
             break;
         case 'ArrowUp':
             e.preventDefault();
@@ -453,6 +509,13 @@ function updateParticleCount() {
 }
 
 // ===== Event Handlers =====
+function handleCanvasClick() {
+    // Forward click to current mode if it has a handler
+    if (particleSystem?.currentMode?.handleClick) {
+        particleSystem.currentMode.handleClick();
+    }
+}
+
 function handleResize() {
     elements.particleCanvas.width = window.innerWidth;
     elements.particleCanvas.height = window.innerHeight;

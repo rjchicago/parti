@@ -10,8 +10,8 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 
-    <!-- stats -->
-    <script defer src="https://stats.rjchicago.com/script.js" data-website-id="7be17525-b0a5-4a2a-96ad-373e2f6eb0f1"></script>
+    <!-- stats (async to prevent blocking) -->
+    <script async src="https://stats.rjchicago.com/script.js" data-website-id="7be17525-b0a5-4a2a-96ad-373e2f6eb0f1"></script>
 </head>
 <body>
     <!-- Intro Screen -->
@@ -88,7 +88,7 @@
             </div>
             <div class="shortcut-item">
                 <kbd>D</kbd>
-                <span>Toggle Layout</span>
+                <span>Toggle Display</span>
             </div>
         </div>
         
@@ -100,6 +100,15 @@
 
         <!-- Settings Link -->
         <a href="#" id="settings-link" class="settings-link">⚙️ Settings</a>
+
+        <!-- Help Button (shown when display is hidden) -->
+        <button id="help-btn" class="help-btn" title="Show UI (D)">?</button>
+
+        <!-- Pause Overlay (always visible when paused) -->
+        <div id="pause-overlay" class="pause-overlay hidden">
+            <span class="pause-text">PAUSED</span>
+            <span class="pause-hint">Press P to resume</span>
+        </div>
     </div>
     
     <!-- Settings Modal -->

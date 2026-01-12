@@ -1,4 +1,4 @@
-import { AttractMode, RepelMode, RainMode, SnowMode, PartyMode, GalacticMode, MatrixMode, GravityMode, SketchMode } from './modes/index.js';
+import { modeRegistry } from './modes/index.js';
 
 // Golden ratio for organic distribution
 const PHI = 1.618033988749895;
@@ -53,19 +53,9 @@ export class ParticleSystem {
         this.landmarks = [];
         this.maskVisible = true;
         
-        // Initialize modes
-        this.modes = {
-            attract: new AttractMode(),
-            repel: new RepelMode(),
-            rain: new RainMode(),
-            snow: new SnowMode(),
-            party: new PartyMode(),
-            galactic: new GalacticMode(),
-            matrix: new MatrixMode(),
-            gravity: new GravityMode(),
-            sketch: new SketchMode()
-        };
-        this.currentMode = this.modes.attract;
+        // Use shared mode registry
+        this.modes = modeRegistry;
+        this.currentMode = this.modes.party;
     }
 
     /**
@@ -131,6 +121,10 @@ export class ParticleSystem {
             
             // Reinitialize particle positions for new mode
             const canvasSize = { width: this.canvas.width, height: this.canvas.height };
+            
+            // Notify mode it's being activated
+            this.currentMode.onActivate(canvasSize);
+            
             for (const particle of this.particles) {
                 this.currentMode.initParticle(particle, canvasSize);
                 particle.vx = (Math.random() - 0.5) * 2;

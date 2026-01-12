@@ -70,5 +70,6 @@ export const MODE_ORDER = [
     'snow',
     'galactic',
     'matrix',
-    'sketch'
+    'sketch',
+    'brickbreaker',
 ];
