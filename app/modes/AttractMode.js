@@ -6,7 +6,7 @@ import { FaceMask } from './FaceMask.js';
  */
 export class AttractMode extends Mode {
     constructor() {
-        super('attract', '🧲', 'Attract');
+        super('attract', 'magnet', 'Attract');
         this.attraction = 0.08;
         this.returnSpeed = 0.02;
         this.buzzStrength = 0.8;  // Intensity of the buzz

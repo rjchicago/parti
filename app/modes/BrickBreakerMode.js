@@ -24,7 +24,7 @@ function drawRoundRect(ctx, x, y, width, height, radius) {
  */
 export class BrickBreakerMode extends Mode {
     constructor() {
-        super('brickbreaker', '🧱', 'Breaker');
+        super('brickbreaker', 'grid-2x2', 'Breaker');
         
         // Game configuration
         this.brickRows = 5;
@@ -438,12 +438,23 @@ export class BrickBreakerMode extends Mode {
         ctx.fill();
         ctx.shadowBlur = 0;
         
-        // Draw UI
+        // Draw UI - score and lives
         ctx.font = 'bold 20px Orbitron, sans-serif';
         ctx.textAlign = 'center';
         ctx.fillStyle = '#ffffff';
-        const hearts = '❤️'.repeat(this.lives) || '💔';
-        ctx.fillText(`${this.score}  |  ${hearts}`, canvasSize.width / 2, 35);
+        
+        // Draw score
+        const centerX = canvasSize.width / 2;
+        ctx.fillText(`${this.score}  |`, centerX - 30, 35);
+        
+        // Draw hearts for lives
+        const heartStartX = centerX + 10;
+        for (let i = 0; i < 3; i++) {
+            const heartX = heartStartX + i * 22;
+            const heartY = 28;
+            const filled = i < this.lives;
+            this.drawHeart(ctx, heartX, heartY, 8, filled);
+        }
         
         // Launch prompt
         if (!this.ball.launched && !this.gameOver && !this.gameWon) {
@@ -527,5 +538,25 @@ export class BrickBreakerMode extends Mode {
 
     getPresetTheme() {
         return 0; // Rainbow for confetti
+    }
+    
+    // Draw Lucide heart icon using SVG path
+    drawHeart(ctx, x, y, size, filled) {
+        ctx.save();
+        ctx.translate(x - size, y - size);
+        const scale = size / 12; // Lucide uses 24x24 viewBox, we want size to be half
+        ctx.scale(scale, scale);
+        
+        // Lucide heart path
+        const heartPath = new Path2D('M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z');
+        
+        if (filled) {
+            ctx.fillStyle = '#ff4466';
+            ctx.fill(heartPath);
+        }
+        ctx.strokeStyle = filled ? '#ff6688' : 'rgba(255, 255, 255, 0.3)';
+        ctx.lineWidth = 2 / scale;
+        ctx.stroke(heartPath);
+        ctx.restore();
     }
 }

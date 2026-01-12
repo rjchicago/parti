@@ -149,7 +149,30 @@ html, body {
 }
 
 .btn-icon {
-    font-size: 1.5rem;
+    width: 24px;
+    height: 24px;
+}
+
+.btn-icon.spin {
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+
+.settings-icon,
+.setting-icon {
+    width: 16px;
+    height: 16px;
+    vertical-align: -2px;
+}
+
+.modal-title-icon {
+    width: 20px;
+    height: 20px;
+    vertical-align: -3px;
 }
 
 .permission-note {
@@ -374,7 +397,10 @@ html, body {
 }
 
 .mode-icon {
-    font-size: 1rem;
+    width: 16px;
+    height: 16px;
+    stroke-width: 2;
+    flex-shrink: 0;
 }
 
 .theme-selector {
@@ -773,7 +799,8 @@ kbd {
     }
     
     .mode-icon {
-        font-size: 1.1rem;
+        width: 18px;
+        height: 18px;
     }
     
     #mode-controls {

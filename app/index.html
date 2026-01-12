@@ -10,6 +10,9 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+    
     <!-- stats (async to prevent blocking) -->
     <script async src="https://stats.rjchicago.com/script.js" data-website-id="7be17525-b0a5-4a2a-96ad-373e2f6eb0f1"></script>
 </head>
@@ -26,7 +29,7 @@
                 Experience thousands of particles flowing to form the shape of your face and hands in real-time.
             </p>
             <button id="enable-camera-btn" class="glow-button">
-                <span class="btn-icon">📷</span>
+                <i data-lucide="camera" class="btn-icon"></i>
                 <span class="btn-text">Enable Camera</span>
             </button>
             <p class="permission-note">Camera access required for tracking</p>
@@ -99,7 +102,7 @@
         </div>
 
         <!-- Settings Link -->
-        <a href="#" id="settings-link" class="settings-link">⚙️ Settings</a>
+        <a href="#" id="settings-link" class="settings-link"><i data-lucide="settings" class="settings-icon"></i> Settings</a>
 
         <!-- Help Button (shown when display is hidden) -->
         <button id="help-btn" class="help-btn" title="Show UI (D)">?</button>
@@ -115,12 +118,12 @@
     <div id="settings-modal" class="modal-overlay" style="display: none;">
         <div class="modal-content">
             <div class="modal-header">
-                <h2>⚙️ Settings</h2>
+                <h2><i data-lucide="settings" class="modal-title-icon"></i> Settings</h2>
                 <button id="close-settings" class="modal-close">&times;</button>
             </div>
             <div class="modal-body">
                 <div class="setting-row">
-                    <span class="setting-label">🎨 Theme</span>
+                    <span class="setting-label"><i data-lucide="palette" class="setting-icon"></i> Theme</span>
                     <select id="theme-select">
                         <option value="0">Rainbow</option>
                         <option value="1">Fire</option>
@@ -132,7 +135,7 @@
                     </select>
                 </div>
                 <div class="setting-row">
-                    <span class="setting-label">✊ Fist Action</span>
+                    <span class="setting-label"><i data-lucide="hand" class="setting-icon"></i> Fist Action</span>
                     <select id="fist-action">
                         <option value="mode">Toggle Mode</option>
                         <option value="camera">Toggle Camera</option>

@@ -3,7 +3,7 @@ import { FaceMask } from './FaceMask.js';
 
 export class PartyMode extends Mode {
     constructor() {
-        super('party', '🎉', 'Party');
+        super('party', 'sparkles', 'Party');
         this.gravity = 0.15;
         this.flutter = 0.3;
         this.terminalVelocity = 4;

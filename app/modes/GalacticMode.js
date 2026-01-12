@@ -3,7 +3,7 @@ import { FaceMask } from './FaceMask.js';
 
 export class GalacticMode extends Mode {
     constructor() {
-        super('galactic', '🌌', 'Galactic');
+        super('galactic', 'orbit', 'Galactic');
         this.twinkleSpeed = 0.005;
         this.driftSpeed = 0.1;
         

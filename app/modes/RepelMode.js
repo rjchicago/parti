@@ -6,7 +6,7 @@ import { FaceMask } from './FaceMask.js';
  */
 export class RepelMode extends Mode {
     constructor() {
-        super('repel', '💨', 'Repel');
+        super('repel', 'wind', 'Repel');
         this.repelDistance = 120;
         this.repelStrength = 0.15;
         this.landmarks = [];

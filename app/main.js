@@ -31,6 +31,9 @@ document.addEventListener('DOMContentLoaded', init);
 
 function init() {
     cacheElements();
+    
+    // Initialize Lucide icons
+    if (typeof lucide !== 'undefined') lucide.createIcons();
     renderModeButtons();
     setupEventListeners();
     
@@ -68,10 +71,15 @@ function renderModeButtons() {
         const mode = modeRegistry[key];
         const isActive = key === currentMode ? ' active' : '';
         return `<button class="mode-btn${isActive}" data-mode="${mode.name}">
-            <span class="mode-icon">${mode.icon}</span>
+            <i data-lucide="${mode.icon}" class="mode-icon"></i>
             <span class="mode-label">${mode.label}</span>
         </button>`;
     }).join('');
+    
+    // Initialize Lucide icons
+    if (typeof lucide !== 'undefined') {
+        lucide.createIcons();
+    }
 }
 
 function cacheElements() {
@@ -179,7 +187,8 @@ function showLayoutIndicator() {
 // ===== App Startup =====
 async function startApp() {
     const btn = elements.enableCameraBtn;
-    btn.innerHTML = '<span class="btn-icon">⏳</span><span class="btn-text">Loading...</span>';
+    btn.innerHTML = '<i data-lucide="loader" class="btn-icon spin"></i><span class="btn-text">Loading...</span>';
+    if (typeof lucide !== 'undefined') lucide.createIcons();
     btn.disabled = true;
 
     try {
@@ -553,7 +562,8 @@ function returnToIntro() {
     elements.introScreen.classList.remove('hidden');
     elements.app.classList.add('hidden');
     
-    elements.enableCameraBtn.innerHTML = '<span class="btn-icon">📷</span><span class="btn-text">Enable Camera</span>';
+    elements.enableCameraBtn.innerHTML = '<i data-lucide="camera" class="btn-icon"></i><span class="btn-text">Enable Camera</span>';
+    if (typeof lucide !== 'undefined') lucide.createIcons();
     elements.enableCameraBtn.disabled = false;
     
     updateStatus('Camera disconnected', 'error');

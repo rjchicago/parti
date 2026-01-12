@@ -7,7 +7,7 @@ import { FaceMask } from './FaceMask.js';
  */
 export class GravityMode extends Mode {
     constructor() {
-        super('gravity', '⚛️', 'Gravity');
+        super('gravity', 'atom', 'Gravity');
         
         // Orbital parameters
         this.gravityStrength = 400;    // Gravitational pull (lower = slower orbits)
